@@ -29,13 +29,16 @@ class AnthropicService {
                 });
 
                 if (!response.ok) {
-                    throw await handleApiError(new Error(response.statusText), response);
+                    // Create error with response info but don't handle it yet
+                    throw new Error(response.statusText, { cause: response });
                 }
 
                 const data = await response.json();
                 return data.content[0].text;
             } catch (error) {
-                throw await handleApiError(error);
+                // Handle all errors in one place
+                const response = error.cause;
+                throw await handleApiError(error, response);
             }
         });
     }

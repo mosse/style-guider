@@ -45,12 +45,12 @@ describe('ErrorBoundary', () => {
             </ErrorBoundary>
         );
 
-        expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Something went wrong' })).toBeInTheDocument();
         expect(screen.getByText('Test error')).toBeInTheDocument();
     });
 
     it('should render specific UI for Anthropic errors', () => {
-        const error = new AnthropicError('API Error', 429, { details: 'Rate limited' });
+        const error = new AnthropicError('API Error Message', 429, { details: 'Rate limited' });
         
         render(
             <ErrorBoundary>
@@ -58,8 +58,9 @@ describe('ErrorBoundary', () => {
             </ErrorBoundary>
         );
 
-        expect(screen.getByText('API Error')).toBeInTheDocument();
-        expect(screen.getByText(/429/)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'API Error' })).toBeInTheDocument();
+        expect(screen.getByText('API Error Message')).toBeInTheDocument();
+        expect(screen.getByText(/Error Code: 429/)).toBeInTheDocument();
     });
 
     it('should call onReset when Try Again is clicked', () => {
@@ -72,7 +73,7 @@ describe('ErrorBoundary', () => {
             </ErrorBoundary>
         );
 
-        fireEvent.click(screen.getByText('Try Again'));
+        fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
         expect(onReset).toHaveBeenCalled();
     });
 
@@ -108,5 +109,18 @@ describe('ErrorBoundary', () => {
         expect(screen.queryByText('Error Details')).not.toBeInTheDocument();
         
         process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should show reload button when children are present', () => {
+        const error = new Error('Test error');
+        
+        render(
+            <ErrorBoundary>
+                <div>Some content</div>
+                <ThrowError error={error} />
+            </ErrorBoundary>
+        );
+
+        expect(screen.getByRole('button', { name: 'Reload Page' })).toBeInTheDocument();
     });
 }); 

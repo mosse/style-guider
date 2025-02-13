@@ -6,10 +6,16 @@ global.fetch = jest.fn();
 
 describe('AnthropicService', () => {
     const originalEnv = process.env;
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
 
     beforeEach(() => {
         // Clear all mocks before each test
         jest.clearAllMocks();
+        
+        // Mock console methods
+        console.error = jest.fn();
+        console.warn = jest.fn();
         
         // Ensure env variables are set for each test
         process.env = {
@@ -21,8 +27,10 @@ describe('AnthropicService', () => {
     });
 
     afterEach(() => {
-        // Restore original env after each test
+        // Restore original env and console methods after each test
         process.env = originalEnv;
+        console.error = originalConsoleError;
+        console.warn = originalConsoleWarn;
     });
 
     it('should successfully generate a style guide', async () => {
@@ -51,6 +59,7 @@ describe('AnthropicService', () => {
                 body: expect.stringContaining(process.env.REACT_APP_ANTHROPIC_MODEL)
             })
         );
+        expect(console.error).not.toHaveBeenCalled();
     });
 
     it('should handle API errors with retry', async () => {
@@ -72,6 +81,16 @@ describe('AnthropicService', () => {
 
         expect(result).toBe('Success after retry');
         expect(fetch).toHaveBeenCalledTimes(2);
+        expect(console.error).toHaveBeenCalledWith(
+            'API Error:',
+            expect.objectContaining({
+                code: 429,
+                name: 'AnthropicError'
+            })
+        );
+        expect(console.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Attempt 1 failed')
+        );
     });
 
     it('should throw AnthropicError for non-retryable errors', async () => {
@@ -86,20 +105,46 @@ describe('AnthropicService', () => {
             .toThrow(AnthropicError);
 
         expect(fetch).toHaveBeenCalledTimes(1);
+        expect(console.error).toHaveBeenCalledWith(
+            'API Error:',
+            expect.objectContaining({
+                code: 400,
+                name: 'AnthropicError'
+            })
+        );
+        // Should only log once since it's not retryable
+        expect(console.error).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle network errors', async () => {
-        global.fetch.mockRejectedValueOnce(new Error('Network error'));
+    it('should handle network errors with retries', async () => {
+        // Mock three consecutive network errors
+        global.fetch
+            .mockRejectedValueOnce(new Error('Network error'))
+            .mockRejectedValueOnce(new Error('Network error'))
+            .mockRejectedValueOnce(new Error('Network error'));
 
         await expect(anthropicService.generateStyleGuide('Test prompt'))
             .rejects
             .toThrow(AnthropicError);
 
-        expect(fetch).toHaveBeenCalledTimes(1);
+        // Should try 3 times (initial + 2 retries)
+        expect(fetch).toHaveBeenCalledTimes(3);
+        expect(console.error).toHaveBeenCalledTimes(3);
+        expect(console.warn).toHaveBeenCalledTimes(2);
+        expect(console.error).toHaveBeenLastCalledWith(
+            'API Error:',
+            expect.objectContaining({
+                code: 500,
+                name: 'AnthropicError',
+                details: expect.objectContaining({
+                    originalError: 'Network error'
+                })
+            })
+        );
     });
 
-    it('should respect max retries limit', async () => {
-        // Mock 4 consecutive 429 errors
+    it('should respect max retries limit for rate limiting', async () => {
+        // Mock 3 consecutive 429 errors
         global.fetch
             .mockResolvedValueOnce({
                 ok: false,
@@ -121,7 +166,20 @@ describe('AnthropicService', () => {
             .rejects
             .toThrow(AnthropicError);
 
-        expect(fetch).toHaveBeenCalledTimes(3); // Default max retries is 3
+        // Should try 3 times total (initial + 2 retries)
+        expect(fetch).toHaveBeenCalledTimes(3);
+        // Should warn about the 2 retry attempts
+        expect(console.warn).toHaveBeenCalledTimes(2);
+        // Should log an error for each failed attempt
+        expect(console.error).toHaveBeenCalledTimes(3);
+        // Verify the last error was rate limiting
+        expect(console.error).toHaveBeenLastCalledWith(
+            'API Error:',
+            expect.objectContaining({
+                code: 429,
+                name: 'AnthropicError'
+            })
+        );
     });
 
     it('should throw error if API key is missing', () => {
