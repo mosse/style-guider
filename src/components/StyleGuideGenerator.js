@@ -197,8 +197,11 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
         return (
             <div style={{ 
                 textAlign: 'left', 
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap'
+                lineHeight: '1.8',
+                whiteSpace: 'pre-wrap',
+                fontSize: '18px',
+                fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
+                color: 'rgba(0, 0, 0, 0.84)'
             }}>
                 {changes.map((segment, index) => {
                     if (typeof segment === 'string') {
@@ -226,19 +229,20 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                                     place="top"
                                     style={{
                                         maxWidth: '300px',
-                                        backgroundColor: '#333',
-                                        color: 'white',
-                                        padding: '8px 12px',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                        color: '#fff',
+                                        padding: '12px 16px',
                                         borderRadius: '4px',
                                         fontSize: '14px',
-                                        lineHeight: '1.4'
+                                        lineHeight: '1.4',
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
                                     }}
                                 />
                             )}
                             {!isAccepted && (
                                 <span style={{ 
                                     textDecoration: !isRejected ? 'line-through' : 'none', 
-                                    color: isRejected ? '#000' : '#666',
+                                    color: isRejected ? 'rgba(0, 0, 0, 0.84)' : 'rgba(0, 0, 0, 0.54)',
                                     marginRight: !isRejected ? '4px' : '0',
                                     cursor: showTooltip ? 'help' : 'default'
                                 }}>
@@ -247,7 +251,7 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                             )}
                             {!isRejected && (
                                 <span style={{ 
-                                    color: isAccepted ? '#000' : '#28a745',
+                                    color: isAccepted ? 'rgba(0, 0, 0, 0.84)' : 'rgb(26, 137, 23)',
                                     marginRight: !isAccepted ? '4px' : '0',
                                     cursor: showTooltip ? 'help' : 'default'
                                 }}>
@@ -255,19 +259,16 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                                 </span>
                             )}
                             {showTooltip && (
-                                <span style={{ marginLeft: '4px' }}>
+                                <span style={{ marginLeft: '6px' }}>
                                     <button
                                         onClick={() => handleAcceptChange(index)}
                                         style={{
-                                            padding: '2px 6px',
-                                            marginRight: '4px',
-                                            backgroundColor: '#28a745',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer',
-                                            fontSize: '12px'
+                                            padding: '2px 8px',
+                                            marginRight: '6px',
+                                            minWidth: 'unset',
+                                            fontSize: '13px'
                                         }}
+                                        className="primary"
                                         title="Accept change"
                                         aria-label="Accept change"
                                     >
@@ -276,13 +277,9 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                                     <button
                                         onClick={() => handleRejectChange(index)}
                                         style={{
-                                            padding: '2px 6px',
-                                            backgroundColor: '#dc3545',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer',
-                                            fontSize: '12px'
+                                            padding: '2px 8px',
+                                            minWidth: 'unset',
+                                            fontSize: '13px'
                                         }}
                                         title="Reject change"
                                         aria-label="Reject change"
@@ -300,9 +297,18 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
 
     return (
         <ApiErrorBoundary>
-            <div className="style-guide-container" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+            <div className="style-guide-container" style={{ 
+                padding: '0 20px', 
+                maxWidth: '728px', 
+                margin: '0 auto'
+            }}>
                 <h2>AP Style Guide Improver</h2>
-                <p>Paste your text below to get AP style suggestions.</p>
+                <p style={{
+                    fontSize: '1.25rem',
+                    color: 'rgba(0, 0, 0, 0.54)',
+                    marginBottom: '2rem',
+                    textAlign: 'left'
+                }}>Paste your text below to get AP style suggestions.</p>
                 
                 <div style={{ marginBottom: '20px' }}>
                     <textarea
@@ -312,26 +318,27 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                         style={{
                             width: '100%',
                             minHeight: '200px',
-                            padding: '10px',
-                            marginBottom: '10px',
+                            padding: '20px',
+                            marginBottom: '20px',
                             borderRadius: '4px',
-                            border: '1px solid #ccc',
-                            fontFamily: 'inherit'
+                            border: '1px solid rgba(0, 0, 0, 0.15)',
+                            fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
+                            fontSize: '18px',
+                            lineHeight: '1.6',
+                            color: 'rgba(0, 0, 0, 0.84)',
+                            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+                            resize: 'vertical'
                         }}
                     />
                     
                     <button
                         onClick={generateStyleGuide}
                         disabled={loading || !inputText.trim()}
+                        className="primary"
                         style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            backgroundColor: '#007bff',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: loading || !inputText.trim() ? 'not-allowed' : 'pointer',
-                            opacity: loading || !inputText.trim() ? 0.7 : 1
+                            fontSize: '15px',
+                            padding: '8px 16px',
+                            minWidth: '120px'
                         }}
                     >
                         {loading ? 'Analyzing...' : 'Analyze Text'}
@@ -339,21 +346,37 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                 </div>
 
                 {error && (
-                    <div style={{ color: 'red', marginTop: '20px', padding: '10px', border: '1px solid red', borderRadius: '4px' }}>
-                        <h3>Error:</h3>
-                        <p>{error}</p>
+                    <div style={{ 
+                        color: 'rgb(201, 75, 75)',
+                        marginTop: '20px',
+                        padding: '20px',
+                        border: '1px solid rgba(201, 75, 75, 0.35)',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(201, 75, 75, 0.05)',
+                        textAlign: 'left'
+                    }}>
+                        <h3 style={{ color: 'rgb(201, 75, 75)', marginBottom: '0.5rem' }}>Error:</h3>
+                        <p style={{ margin: 0 }}>{error}</p>
                     </div>
                 )}
 
                 {(loading || styleGuide) && (
                     <div style={{ 
-                        marginTop: '20px', 
-                        padding: '20px', 
-                        border: '1px solid #ccc', 
+                        marginTop: '32px', 
+                        padding: '24px', 
+                        border: '1px solid rgba(0, 0, 0, 0.15)', 
                         borderRadius: '4px', 
-                        backgroundColor: '#f9f9f9' 
+                        backgroundColor: '#fff',
+                        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+                        textAlign: 'left'
                     }}>
-                        <h3>Suggested Improvements</h3>
+                        <h3 style={{ 
+                            marginBottom: loading ? '1rem' : '1.5rem',
+                            fontSize: '1.5rem',
+                            fontWeight: '600',
+                            color: 'rgba(0, 0, 0, 0.84)',
+                            letterSpacing: '-0.02em'
+                        }}>Suggested Improvements</h3>
                         {loading ? <LoadingSpinner /> : renderChanges(styleGuide)}
                     </div>
                 )}
