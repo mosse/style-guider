@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { anthropicService } from '../services/anthropic/AnthropicService';
 import ApiErrorBoundary from './ApiErrorBoundary';
 import { Tooltip } from 'react-tooltip';
@@ -9,6 +9,9 @@ function StyleGuideGenerator() {
     const [styleGuide, setStyleGuide] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [acceptedChanges, setAcceptedChanges] = useState(new Set());
+    const [rejectedChanges, setRejectedChanges] = useState(new Set());
+    const [visibleTooltips, setVisibleTooltips] = useState(new Set());
 
     const generateStyleGuide = async () => {
         if (!inputText.trim()) return;
@@ -100,6 +103,42 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
         }
     };
 
+    const handleAcceptChange = (index) => {
+        setAcceptedChanges(prev => {
+            const newSet = new Set(prev);
+            newSet.add(index);
+            return newSet;
+        });
+        setRejectedChanges(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+        });
+        setVisibleTooltips(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+        });
+    };
+
+    const handleRejectChange = (index) => {
+        setRejectedChanges(prev => {
+            const newSet = new Set(prev);
+            newSet.add(index);
+            return newSet;
+        });
+        setAcceptedChanges(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+        });
+        setVisibleTooltips(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+        });
+    };
+
     const renderChanges = (changes) => {
         if (!Array.isArray(changes)) return null;
 
@@ -115,6 +154,10 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                     }
                     
                     const tooltipId = `change-${index}`;
+                    const isAccepted = acceptedChanges.has(index);
+                    const isRejected = rejectedChanges.has(index);
+                    const showTooltip = !isAccepted && !isRejected;
+
                     return (
                         <span 
                             key={index} 
@@ -122,37 +165,80 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                                 position: 'relative',
                                 display: 'inline-block'
                             }}
-                            data-tooltip-id={tooltipId}
-                            data-tooltip-content={segment.reason}
+                            data-tooltip-id={showTooltip ? tooltipId : undefined}
+                            data-tooltip-content={showTooltip ? segment.reason : undefined}
                         >
-                            <Tooltip 
-                                id={tooltipId}
-                                place="top"
-                                style={{
-                                    maxWidth: '300px',
-                                    backgroundColor: '#333',
-                                    color: 'white',
-                                    padding: '8px 12px',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    lineHeight: '1.4'
-                                }}
-                            />
-                            <span style={{ 
-                                textDecoration: 'line-through', 
-                                color: '#666',
-                                marginRight: '4px',
-                                cursor: 'help'
-                            }}>
-                                {segment.original}
-                            </span>
-                            <span style={{ 
-                                color: '#28a745',
-                                marginRight: '4px',
-                                cursor: 'help'
-                            }}>
-                                {segment.replacement}
-                            </span>
+                            {showTooltip && (
+                                <Tooltip 
+                                    id={tooltipId}
+                                    place="top"
+                                    style={{
+                                        maxWidth: '300px',
+                                        backgroundColor: '#333',
+                                        color: 'white',
+                                        padding: '8px 12px',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        lineHeight: '1.4'
+                                    }}
+                                />
+                            )}
+                            {!isAccepted && (
+                                <span style={{ 
+                                    textDecoration: !isRejected ? 'line-through' : 'none', 
+                                    color: isRejected ? '#000' : '#666',
+                                    marginRight: !isRejected ? '4px' : '0',
+                                    cursor: showTooltip ? 'help' : 'default'
+                                }}>
+                                    {segment.original}
+                                </span>
+                            )}
+                            {!isRejected && (
+                                <span style={{ 
+                                    color: isAccepted ? '#000' : '#28a745',
+                                    marginRight: !isAccepted ? '4px' : '0',
+                                    cursor: showTooltip ? 'help' : 'default'
+                                }}>
+                                    {segment.replacement}
+                                </span>
+                            )}
+                            {showTooltip && (
+                                <span style={{ marginLeft: '4px' }}>
+                                    <button
+                                        onClick={() => handleAcceptChange(index)}
+                                        style={{
+                                            padding: '2px 6px',
+                                            marginRight: '4px',
+                                            backgroundColor: '#28a745',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '3px',
+                                            cursor: 'pointer',
+                                            fontSize: '12px'
+                                        }}
+                                        title="Accept change"
+                                        aria-label="Accept change"
+                                    >
+                                        <span aria-hidden="true">✓</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleRejectChange(index)}
+                                        style={{
+                                            padding: '2px 6px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '3px',
+                                            cursor: 'pointer',
+                                            fontSize: '12px'
+                                        }}
+                                        title="Reject change"
+                                        aria-label="Reject change"
+                                    >
+                                        <span aria-hidden="true">✕</span>
+                                    </button>
+                                </span>
+                            )}
                         </span>
                     );
                 })}

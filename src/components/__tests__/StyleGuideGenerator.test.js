@@ -11,15 +11,20 @@ jest.mock('../../services/anthropic/AnthropicService', () => ({
     }
 }));
 
-// Mock react-tooltip to avoid DOM warnings
+// Mock react-tooltip
 jest.mock('react-tooltip', () => ({
-    Tooltip: () => null
+    Tooltip: jest.fn(({ id }) => <div data-testid={`tooltip-${id}`} />)
 }));
 
 describe('StyleGuideGenerator', () => {
     beforeEach(() => {
         // Clear all mocks before each test
         jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        // Reset all mocks after each test
+        jest.resetAllMocks();
     });
 
     /**
@@ -250,5 +255,198 @@ describe('StyleGuideGenerator', () => {
             expect(tooltipContainer).toHaveAttribute('data-tooltip-content', 'AP style explanation');
             expect(tooltipContainer).toHaveAttribute('data-tooltip-id');
         });
+    });
+
+    /**
+     * Tests accept/reject functionality for changes
+     * Verifies:
+     * - Accept button shows/works correctly
+     * - Reject button shows/works correctly
+     * - UI updates appropriately after actions
+     */
+    it('handles accepting and rejecting changes', async () => {
+        const mockResponse = JSON.stringify([
+            {
+                "original": "test",
+                "replacement": "example",
+                "reason": "AP style explanation"
+            }
+        ]);
+
+        anthropicService.generateStyleGuide.mockResolvedValueOnce(mockResponse);
+
+        render(<StyleGuideGenerator />);
+        
+        // Type text and analyze
+        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const analyzeButton = screen.getByRole('button', { name: 'Analyze Text' });
+
+        await act(async () => {
+            await userEvent.type(textarea, 'Test text');
+            await userEvent.click(analyzeButton);
+        });
+
+        // Wait for results
+        await waitFor(() => {
+            expect(screen.getByText('test')).toBeInTheDocument();
+            expect(screen.getByText('example')).toBeInTheDocument();
+        });
+
+        // Find and click accept button using aria-label
+        const acceptButton = screen.getByRole('button', { name: /accept change/i });
+        await act(async () => {
+            await userEvent.click(acceptButton);
+        });
+
+        // After accepting, original text should be gone
+        expect(screen.queryByText('test')).not.toBeInTheDocument();
+        // Replacement should still be there but in normal color
+        const replacement = screen.getByText('example');
+        expect(replacement).toHaveStyle({ color: '#000' });
+
+        // Buttons should be gone
+        expect(screen.queryByRole('button', { name: /accept change/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /reject change/i })).not.toBeInTheDocument();
+    });
+
+    it('handles rejecting changes', async () => {
+        const mockResponse = JSON.stringify([
+            {
+                "original": "test",
+                "replacement": "example",
+                "reason": "AP style explanation"
+            }
+        ]);
+
+        anthropicService.generateStyleGuide.mockResolvedValueOnce(mockResponse);
+
+        render(<StyleGuideGenerator />);
+        
+        // Set up initial state
+        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        fireEvent.change(textarea, { target: { value: 'Test text' } });
+        
+        const analyzeButton = screen.getByText('Analyze Text');
+        await act(async () => {
+            fireEvent.click(analyzeButton);
+        });
+
+        // Wait for results
+        await waitFor(() => {
+            expect(screen.getByText('test')).toBeInTheDocument();
+        });
+
+        // Initial state check
+        const original = screen.getByText('test');
+        const replacement = screen.getByText('example');
+        
+        // Reject the change
+        const rejectButton = screen.getByRole('button', { name: /reject change/i });
+        await act(async () => {
+            fireEvent.click(rejectButton);
+        });
+
+        // Original text should still be there without strikethrough
+        const originalAfterReject = screen.getByText('test');
+        expect(originalAfterReject).toBeInTheDocument();
+        expect(originalAfterReject).not.toHaveStyle({ textDecoration: 'line-through' });
+        expect(originalAfterReject).toHaveStyle({ color: '#000' });
+
+        // Replacement text should be gone
+        expect(screen.queryByText('example')).not.toBeInTheDocument();
+
+        // Buttons should be gone
+        expect(screen.queryByRole('button', { name: /accept change/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /reject change/i })).not.toBeInTheDocument();
+    });
+
+    it('removes tooltip when accepting changes', async () => {
+        const mockResponse = JSON.stringify([
+            {
+                "original": "test",
+                "replacement": "example",
+                "reason": "AP style explanation"
+            }
+        ]);
+
+        anthropicService.generateStyleGuide.mockResolvedValueOnce(mockResponse);
+
+        render(<StyleGuideGenerator />);
+        
+        // Set up initial state
+        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        fireEvent.change(textarea, { target: { value: 'Test text' } });
+        
+        const analyzeButton = screen.getByText('Analyze Text');
+        await act(async () => {
+            fireEvent.click(analyzeButton);
+        });
+
+        // Wait for results
+        await waitFor(() => {
+            expect(screen.getByText('test')).toBeInTheDocument();
+        });
+
+        // Check initial tooltip attributes
+        const tooltipContainer = screen.getByText('test').closest('[data-tooltip-content]');
+        expect(tooltipContainer).toHaveAttribute('data-tooltip-content', 'AP style explanation');
+        expect(tooltipContainer).toHaveAttribute('data-tooltip-id', 'change-0');
+
+        // Accept the change
+        const acceptButton = screen.getByRole('button', { name: /accept change/i });
+        await act(async () => {
+            fireEvent.click(acceptButton);
+        });
+
+        // Verify tooltip attributes are removed
+        const textElement = screen.getByText('example');
+        const container = textElement.closest('span');
+        expect(container).not.toHaveAttribute('data-tooltip-content');
+        expect(container).not.toHaveAttribute('data-tooltip-id');
+    });
+
+    it('removes tooltip when rejecting changes', async () => {
+        const mockResponse = JSON.stringify([
+            {
+                "original": "test",
+                "replacement": "example",
+                "reason": "AP style explanation"
+            }
+        ]);
+
+        anthropicService.generateStyleGuide.mockResolvedValueOnce(mockResponse);
+
+        render(<StyleGuideGenerator />);
+        
+        // Set up initial state
+        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        fireEvent.change(textarea, { target: { value: 'Test text' } });
+        
+        const analyzeButton = screen.getByText('Analyze Text');
+        await act(async () => {
+            fireEvent.click(analyzeButton);
+        });
+
+        // Wait for results
+        await waitFor(() => {
+            expect(screen.getByText('test')).toBeInTheDocument();
+        });
+
+        // Check initial tooltip attributes
+        const tooltipContainer = screen.getByText('test').closest('[data-tooltip-content]');
+        expect(tooltipContainer).toHaveAttribute('data-tooltip-content', 'AP style explanation');
+        expect(tooltipContainer).toHaveAttribute('data-tooltip-id', 'change-0');
+
+        // Reject the change
+        const rejectButton = screen.getByRole('button', { name: /reject change/i });
+        await act(async () => {
+            fireEvent.click(rejectButton);
+        });
+
+        // Verify tooltip attributes are removed
+        const textElement = screen.getByText('test');
+        const container = textElement.closest('span');
+        expect(container).not.toHaveAttribute('data-tooltip-content');
+        expect(container).not.toHaveAttribute('data-tooltip-id');
     });
 }); 
