@@ -4,8 +4,9 @@ import { handleApiError, withRetry } from '../../utils/errors/errorHandler';
 class AnthropicService {
     constructor() {
         this.apiKey = ANTHROPIC_CONFIG.API_KEY;
-        this.apiUrl = ANTHROPIC_CONFIG.API_URL;
         this.model = ANTHROPIC_CONFIG.MODEL;
+        // Use local proxy server instead of direct Anthropic API
+        this.apiUrl = 'http://localhost:3001/api/anthropic';
     }
 
     async generateStyleGuide(prompt) {
@@ -15,8 +16,6 @@ class AnthropicService {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-api-key': this.apiKey,
-                        'anthropic-version': '2023-06-01',
                     },
                     body: JSON.stringify({
                         model: this.model,
