@@ -302,7 +302,7 @@ describe('StyleGuideGenerator', () => {
         expect(screen.queryByText('test')).not.toBeInTheDocument();
         // Replacement should still be there but in normal color
         const replacement = screen.getByText('example');
-        expect(replacement).toHaveStyle({ color: '#000' });
+        expect(replacement).toHaveStyle({ color: 'rgba(0, 0, 0, 0.84)' });
 
         // Buttons should be gone
         expect(screen.queryByRole('button', { name: /accept change/i })).not.toBeInTheDocument();
@@ -350,7 +350,7 @@ describe('StyleGuideGenerator', () => {
         const originalAfterReject = screen.getByText('test');
         expect(originalAfterReject).toBeInTheDocument();
         expect(originalAfterReject).not.toHaveStyle({ textDecoration: 'line-through' });
-        expect(originalAfterReject).toHaveStyle({ color: '#000' });
+        expect(originalAfterReject).toHaveStyle({ color: 'rgba(0, 0, 0, 0.84)' });
 
         // Replacement text should be gone
         expect(screen.queryByText('example')).not.toBeInTheDocument();
