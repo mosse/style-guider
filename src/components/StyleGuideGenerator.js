@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { anthropicService } from '../services/anthropic/AnthropicService';
 import ApiErrorBoundary from './ApiErrorBoundary';
 import { Tooltip } from 'react-tooltip';
+import LoadingSpinner from './LoadingSpinner';
 import 'react-tooltip/dist/react-tooltip.css';
 
 function StyleGuideGenerator() {
@@ -87,15 +88,66 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
 
             const response = await anthropicService.generateStyleGuide(prompt);
             
-            // Clean the response by removing any markdown formatting
-            const cleanedResponse = response
-                .replace(/```json\s*/g, '')
-                .replace(/```\s*$/g, '')
+            // Clean the response by removing any markdown formatting and normalizing whitespace
+            let cleanedResponse = response
+                .replace(/```json\s*/g, '')  // Remove opening markdown
+                .replace(/```\s*$/g, '')     // Remove closing markdown
+                .replace(/[\u2018\u2019]/g, "'")  // Replace smart quotes
+                .replace(/[\u201C\u201D]/g, '"')  // Replace smart double quotes
+                .replace(/\u2014/g, '--')         // Replace em dashes
+                .replace(/\u2013/g, '-')          // Replace en dashes
+                .replace(/\u2026/g, '...')        // Replace ellipsis
+                .replace(/[\u200B-\u200D\uFEFF]/g, '')  // Remove zero-width spaces
                 .trim();
-            
-            // Parse the cleaned JSON response
-            const changes = JSON.parse(cleanedResponse);
-            setStyleGuide(changes);
+
+            // Handle newlines in a way that preserves them in strings but removes them from JSON structure
+            cleanedResponse = cleanedResponse
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line)  // Remove empty lines
+                .join('');
+
+            // Attempt to fix common JSON syntax issues
+            if (!cleanedResponse.startsWith('[')) {
+                cleanedResponse = '[' + cleanedResponse;
+            }
+            if (!cleanedResponse.endsWith(']')) {
+                cleanedResponse = cleanedResponse + ']';
+            }
+
+            try {
+                // Parse the cleaned JSON response
+                const changes = JSON.parse(cleanedResponse);
+                if (!Array.isArray(changes)) {
+                    throw new Error('Response is not an array');
+                }
+                
+                // Validate each segment in the array
+                changes.forEach((segment, index) => {
+                    if (typeof segment !== 'string' && typeof segment !== 'object') {
+                        throw new Error(`Invalid segment type at index ${index}`);
+                    }
+                    if (typeof segment === 'object' && (!segment.original || !segment.replacement || !segment.reason)) {
+                        throw new Error(`Missing required fields in change object at index ${index}`);
+                    }
+                });
+
+                setStyleGuide(changes);
+            } catch (err) {
+                console.error('JSON Parse Error:', err);
+                console.error('Raw Response:', response);
+                console.error('Cleaned Response:', cleanedResponse);
+                
+                // Try to identify the problematic part of the JSON
+                const position = parseInt(err.message.match(/position (\d+)/)?.[1]);
+                if (!isNaN(position)) {
+                    const context = cleanedResponse.substring(Math.max(0, position - 50), Math.min(cleanedResponse.length, position + 50));
+                    console.error('Error context:', context);
+                    console.error('Error position:', '^'.padStart(51, ' '));
+                }
+                
+                throw new Error(`Failed to parse API response: ${err.message}. Please try again.`);
+            }
         } catch (err) {
             setError(err.message || 'An error occurred while generating the style guide');
         } finally {
@@ -293,7 +345,7 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                     </div>
                 )}
 
-                {styleGuide && (
+                {(loading || styleGuide) && (
                     <div style={{ 
                         marginTop: '20px', 
                         padding: '20px', 
@@ -302,7 +354,7 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                         backgroundColor: '#f9f9f9' 
                     }}>
                         <h3>Suggested Improvements</h3>
-                        {renderChanges(styleGuide)}
+                        {loading ? <LoadingSpinner /> : renderChanges(styleGuide)}
                     </div>
                 )}
             </div>
