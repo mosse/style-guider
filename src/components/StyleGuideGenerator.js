@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { anthropicService } from '../services/anthropic/AnthropicService';
 import ApiErrorBoundary from './ApiErrorBoundary';
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
 
 function StyleGuideGenerator() {
     const [inputText, setInputText] = useState('');
@@ -19,7 +21,7 @@ function StyleGuideGenerator() {
             const prompt = `You are tasked with improving a draft document by applying your knowledge of the Associated Press Style Guide (AP Style Guide). Analyze the text and return a JSON array of segments.
 
 Each segment should be either:
-1. A string containing unchanged text
+1. A string containing unchanged text (including any linebreaks)
 2. An object representing a change, with the following structure:
    {
      "original": "the original text",
@@ -27,43 +29,69 @@ Each segment should be either:
      "reason": "brief explanation of why this change improves AP style adherence"
    }
 
-Example response format:
+IMPORTANT: 
+- Make changes at the most granular level possible. Instead of changing entire sentences, identify specific words or phrases that need improvement.
+- Preserve all linebreaks (\\n) in the unchanged text segments. Do not combine paragraphs.
+- Each paragraph should start with its own text segment.
+- Return ONLY the raw JSON array. Do not include any markdown formatting, code block syntax, or explanation text.
+
+Example input with multiple paragraphs:
+"Abraham Lincoln grew up to become the nation's sixteenth president.
+
+He led the country from March 1861 until his assassination in April 1865, a little over a month into his second term."
+
+Your response should be exactly like this (no additional text or formatting):
 [
-    "This is unchanged text at the start. ",
+    "Abraham Lincoln grew up ",
     {
-        "original": "The meeting will be held by the committee",
-        "replacement": "The committee will hold the meeting",
-        "reason": "Changed to active voice per AP style"
+        "original": "to",
+        "replacement": "and",
+        "reason": "AP style prefers more direct language"
     },
-    ". More unchanged text. ",
+    " become the nation's ",
     {
-        "original": "govt.",
-        "replacement": "government",
-        "reason": "AP style avoids abbreviations in regular text"
+        "original": "sixteenth",
+        "replacement": "16th",
+        "reason": "AP style uses numerals for ordinal numbers above ninth"
     },
-    " Final unchanged text."
+    " president.\\n\\n",
+    "He led the country from March 1861 until his assassination in April 1865, a little ",
+    {
+        "original": "over",
+        "replacement": "more than",
+        "reason": "AP style prefers 'more than' over 'over' when referring to time periods"
+    },
+    " a month into his second term."
 ]
 
 Guidelines:
-1. Preserve all whitespace and punctuation in unchanged segments
+1. Preserve all whitespace, linebreaks, and punctuation in unchanged segments
 2. Make changes that align with AP Style Guide, focusing on:
-   - Active vs. passive voice
-   - Clear, concise language
-   - Proper formatting and punctuation
-   - Appropriate terminology
-   - Standard AP style conventions
-3. Each change should be as specific as possible (word or phrase level rather than full sentences when appropriate)
-4. Provide clear, concise reasons for each change
+   - Numbers (when to use numerals vs. words)
+   - Punctuation rules
+   - Preferred word choices and phrases
+   - Abbreviations and acronyms
+   - Date and time formatting
+3. Each change must be at the most specific word or phrase level possible
+4. Provide clear, concise reasons that reference specific AP style rules
 5. Maintain the original meaning and intent of the text
+6. Keep paragraphs separate - do not combine them into a single segment
 
 Here is the text to analyze:
 ${inputText}
 
-Return only valid JSON that matches the format described above.`;
+Remember: Return ONLY the raw JSON array with no additional formatting or explanation.`;
 
             const response = await anthropicService.generateStyleGuide(prompt);
-            // Parse the JSON response
-            const changes = JSON.parse(response);
+            
+            // Clean the response by removing any markdown formatting
+            const cleanedResponse = response
+                .replace(/```json\s*/g, '')
+                .replace(/```\s*$/g, '')
+                .trim();
+            
+            // Parse the cleaned JSON response
+            const changes = JSON.parse(cleanedResponse);
             setStyleGuide(changes);
         } catch (err) {
             setError(err.message || 'An error occurred while generating the style guide');
@@ -76,35 +104,54 @@ Return only valid JSON that matches the format described above.`;
         if (!Array.isArray(changes)) return null;
 
         return (
-            <div style={{ textAlign: 'left', lineHeight: '1.6' }}>
+            <div style={{ 
+                textAlign: 'left', 
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap'
+            }}>
                 {changes.map((segment, index) => {
                     if (typeof segment === 'string') {
                         return <span key={index}>{segment}</span>;
                     }
                     
+                    const tooltipId = `change-${index}`;
                     return (
-                        <span key={index} style={{ position: 'relative' }}>
+                        <span 
+                            key={index} 
+                            style={{ 
+                                position: 'relative',
+                                display: 'inline-block'
+                            }}
+                            data-tooltip-id={tooltipId}
+                            data-tooltip-content={segment.reason}
+                        >
+                            <Tooltip 
+                                id={tooltipId}
+                                place="top"
+                                style={{
+                                    maxWidth: '300px',
+                                    backgroundColor: '#333',
+                                    color: 'white',
+                                    padding: '8px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    lineHeight: '1.4'
+                                }}
+                            />
                             <span style={{ 
                                 textDecoration: 'line-through', 
                                 color: '#666',
-                                marginRight: '4px'
+                                marginRight: '4px',
+                                cursor: 'help'
                             }}>
                                 {segment.original}
                             </span>
                             <span style={{ 
                                 color: '#28a745',
-                                marginRight: '4px'
+                                marginRight: '4px',
+                                cursor: 'help'
                             }}>
-                                → {segment.replacement}
-                            </span>
-                            <span style={{ 
-                                fontSize: '0.8em',
-                                color: '#666',
-                                display: 'block',
-                                marginLeft: '20px',
-                                marginBottom: '0.5em'
-                            }}>
-                                ({segment.reason})
+                                {segment.replacement}
                             </span>
                         </span>
                     );
