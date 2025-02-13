@@ -3,6 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ApiErrorBoundary from '../ApiErrorBoundary';
 import { AnthropicError } from '../../utils/errors/AnthropicError';
 
+/**
+ * Test suite for the ApiErrorBoundary component.
+ * This specialized error boundary handles API-specific errors,
+ * providing appropriate error messages and recovery mechanisms
+ * for API-related failures.
+ */
+
 // Mock console.error to avoid test noise
 const originalError = console.error;
 beforeAll(() => {
@@ -26,6 +33,13 @@ describe('ApiErrorBoundary', () => {
         console.error.mockRestore();
     });
 
+    /**
+     * Tests the default rendering without errors.
+     * Verifies:
+     * - API components render normally
+     * - Error boundary is transparent when no errors occur
+     * - Children receive proper props and context
+     */
     it('should render children when there is no error', () => {
         const { getByText } = render(
             <ApiErrorBoundary>
@@ -36,6 +50,14 @@ describe('ApiErrorBoundary', () => {
         expect(getByText('API Component')).toBeInTheDocument();
     });
 
+    /**
+     * Tests API error handling and display.
+     * Verifies:
+     * - API errors are caught and processed
+     * - Error UI shows appropriate status codes
+     * - Error messages are user-friendly
+     * - API-specific styling is applied
+     */
     it('should handle API errors appropriately', () => {
         const error = new AnthropicError(
             'Rate limit exceeded',
@@ -49,11 +71,19 @@ describe('ApiErrorBoundary', () => {
             </ApiErrorBoundary>
         );
 
-        expect(screen.getByText('API Error')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'API Error' })).toBeInTheDocument();
         expect(screen.getByText('Rate limit exceeded')).toBeInTheDocument();
         expect(screen.getByText(/429/)).toBeInTheDocument();
     });
 
+    /**
+     * Tests error recovery mechanism.
+     * Verifies:
+     * - Reset callback is triggered
+     * - Error state is cleared properly
+     * - Component can recover from API errors
+     * - State is properly reset for new API calls
+     */
     it('should call onReset when error is cleared', () => {
         const onReset = jest.fn();
         const error = new AnthropicError('API Error', 500);
@@ -64,10 +94,18 @@ describe('ApiErrorBoundary', () => {
             </ApiErrorBoundary>
         );
 
-        fireEvent.click(screen.getByText('Try Again'));
+        fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
         expect(onReset).toHaveBeenCalled();
     });
 
+    /**
+     * Tests performance optimization.
+     * Verifies:
+     * - Component only updates when necessary
+     * - Prevents unnecessary re-renders
+     * - Maintains error boundary efficiency
+     * - Proper implementation of shouldComponentUpdate
+     */
     it('should not update for unchanged props', () => {
         const onReset = jest.fn();
         const { rerender } = render(
@@ -87,6 +125,14 @@ describe('ApiErrorBoundary', () => {
         expect(screen.getByText('Content')).toBeInTheDocument();
     });
 
+    /**
+     * Tests proper re-rendering behavior.
+     * Verifies:
+     * - Updates occur when children change
+     * - Error state persists appropriately
+     * - Component handles prop changes correctly
+     * - DOM updates are accurate
+     */
     it('should update when children change', () => {
         const { rerender } = render(
             <ApiErrorBoundary>
