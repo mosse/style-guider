@@ -33,6 +33,14 @@ describe('AnthropicService', () => {
         console.warn = originalConsoleWarn;
     });
 
+    /**
+     * Tests the happy path where the API call is successful.
+     * Verifies:
+     * - Correct API endpoint and parameters are used
+     * - API key and model are properly included
+     * - Response is correctly parsed
+     * - No errors are logged
+     */
     it('should successfully generate a style guide', async () => {
         const mockResponse = {
             content: [{ text: 'Generated style guide content' }]
@@ -62,6 +70,15 @@ describe('AnthropicService', () => {
         expect(console.error).not.toHaveBeenCalled();
     });
 
+    /**
+     * Tests the retry mechanism for rate limit errors (429).
+     * Verifies:
+     * - Service retries after a rate limit error
+     * - Succeeds on the second attempt
+     * - Properly logs the initial error
+     * - Logs a warning about the retry
+     * - Returns successful response after retry
+     */
     it('should handle API errors with retry', async () => {
         // Mock a rate limit error followed by a success
         global.fetch
@@ -93,6 +110,14 @@ describe('AnthropicService', () => {
         );
     });
 
+    /**
+     * Tests handling of non-retryable errors (e.g., 400 Bad Request).
+     * Verifies:
+     * - Error is not retried
+     * - Proper error type is thrown
+     * - Error is logged exactly once
+     * - Error contains correct status code and details
+     */
     it('should throw AnthropicError for non-retryable errors', async () => {
         global.fetch.mockResolvedValueOnce({
             ok: false,
@@ -116,6 +141,15 @@ describe('AnthropicService', () => {
         expect(console.error).toHaveBeenCalledTimes(1);
     });
 
+    /**
+     * Tests handling of network-level errors (e.g., connection failures).
+     * Verifies:
+     * - Network errors are retried the maximum number of times
+     * - Each attempt is logged
+     * - Warnings are issued for retry attempts
+     * - Final error is properly transformed into an AnthropicError
+     * - Error details include the original network error
+     */
     it('should handle network errors with retries', async () => {
         // Mock three consecutive network errors
         global.fetch
@@ -143,6 +177,15 @@ describe('AnthropicService', () => {
         );
     });
 
+    /**
+     * Tests the retry limit for rate limiting errors.
+     * Verifies:
+     * - Service stops retrying after maximum attempts
+     * - Each attempt is properly logged
+     * - Warning messages are issued for each retry
+     * - Final error maintains the rate limit status
+     * - Total number of attempts matches retry configuration
+     */
     it('should respect max retries limit for rate limiting', async () => {
         // Mock 3 consecutive 429 errors
         global.fetch
@@ -182,6 +225,14 @@ describe('AnthropicService', () => {
         );
     });
 
+    /**
+     * Tests environment variable validation.
+     * Verifies:
+     * - Service fails fast if API key is missing
+     * - Appropriate error message is thrown
+     * - Error occurs during service initialization
+     * This prevents making API calls without proper configuration
+     */
     it('should throw error if API key is missing', () => {
         // Temporarily remove API key
         const { REACT_APP_ANTHROPIC_API_KEY, ...envWithoutKey } = process.env;
