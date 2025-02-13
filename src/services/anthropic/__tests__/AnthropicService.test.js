@@ -56,13 +56,11 @@ describe('AnthropicService', () => {
         expect(result).toBe('Generated style guide content');
         expect(fetch).toHaveBeenCalledTimes(1);
         expect(fetch).toHaveBeenCalledWith(
-            `${process.env.REACT_APP_ANTHROPIC_API_URL}/messages`,
+            'http://localhost:3001/api/anthropic/messages',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({
-                    'Content-Type': 'application/json',
-                    'x-api-key': process.env.REACT_APP_ANTHROPIC_API_KEY,
-                    'anthropic-version': '2023-06-01'
+                    'Content-Type': 'application/json'
                 }),
                 body: expect.stringContaining(process.env.REACT_APP_ANTHROPIC_MODEL)
             })
