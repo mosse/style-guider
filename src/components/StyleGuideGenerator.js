@@ -388,7 +388,8 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                             fontSize: '21px',
                             lineHeight: '1.6',
                             color: 'rgba(0, 0, 0, 0.4)',
-                            position: 'relative'
+                            position: 'relative',
+                            textAlign: 'left'
                         }}>
                             {inputText}
                             <div style={{
