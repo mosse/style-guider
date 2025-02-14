@@ -7,11 +7,14 @@ const LoadingSpinner = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '20px',
-            padding: '20px'
+            padding: '20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
         }}>
             <div style={{
-                width: '60px',
-                height: '60px',
+                width: '40px',
+                height: '40px',
                 position: 'relative',
                 animation: 'spin 3s linear infinite'
             }}>
@@ -19,8 +22,8 @@ const LoadingSpinner = () => {
                     position: 'absolute',
                     width: '100%',
                     height: '100%',
-                    border: '4px solid transparent',
-                    borderTop: '4px solid #007bff',
+                    border: '3px solid transparent',
+                    borderTop: '3px solid rgba(0, 123, 255, 0.8)',
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite'
                 }} />
@@ -29,8 +32,8 @@ const LoadingSpinner = () => {
                     width: '80%',
                     height: '80%',
                     margin: '10%',
-                    border: '4px solid transparent',
-                    borderTop: '4px solid #28a745',
+                    border: '3px solid transparent',
+                    borderTop: '3px solid rgba(40, 167, 69, 0.8)',
                     borderRadius: '50%',
                     animation: 'spinReverse 1.5s linear infinite'
                 }} />
@@ -39,8 +42,8 @@ const LoadingSpinner = () => {
                     width: '60%',
                     height: '60%',
                     margin: '20%',
-                    border: '4px solid transparent',
-                    borderTop: '4px solid #dc3545',
+                    border: '3px solid transparent',
+                    borderTop: '3px solid rgba(220, 53, 69, 0.8)',
                     borderRadius: '50%',
                     animation: 'spin 2s linear infinite'
                 }} />
@@ -58,16 +61,16 @@ const LoadingSpinner = () => {
                             animation: pulse 1.5s ease-in-out infinite;
                         }
                         @keyframes pulse {
-                            0%, 100% { opacity: 0.5; }
-                            50% { opacity: 1; }
+                            0%, 100% { opacity: 0.6; }
+                            50% { opacity: 0.9; }
                         }
                     `}
                 </style>
             </div>
             <p className="loading-text" style={{
                 margin: 0,
-                fontSize: '16px',
-                color: '#666',
+                fontSize: '14px',
+                color: 'rgba(0, 0, 0, 0.6)',
                 fontWeight: 500
             }}>
                 Analyzing your text with AP style magic... ✨

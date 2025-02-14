@@ -35,15 +35,24 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Check for main UI elements
-        expect(screen.getByText('AP Style Guide Improver')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Paste your text here...')).toBeInTheDocument();
+        expect(screen.getByText('Style-Guider')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Start writing or paste your text here...')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Analyze Text' })).toBeInTheDocument();
         
         // Button should be disabled initially (no text)
         expect(screen.getByRole('button')).toBeDisabled();
         
-        // Results section should not be present initially
-        expect(screen.queryByText('Suggested Improvements')).not.toBeInTheDocument();
+        // Verify critical textarea styling
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
+        
+        // Test only the most important styles individually
+        expect(textarea).toHaveStyle('resize: none');
+        expect(textarea).toHaveStyle('overflow: hidden');
+        expect(textarea).toHaveStyle('outline: none');
+        expect(textarea).toHaveStyle('background: transparent');
+        expect(textarea).toHaveStyle('width: 100%');
+        expect(textarea).toHaveStyle('padding: 20px 0');
+        
     });
 
     /**
@@ -66,7 +75,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type some text and click analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -76,14 +85,21 @@ describe('StyleGuideGenerator', () => {
 
         // Wait for results
         await waitFor(() => {
-            expect(screen.getByText('Suggested Improvements')).toBeInTheDocument();
+            expect(screen.getByText('This is unchanged text.')).toBeInTheDocument();
         });
 
         // Check that all parts of the response are rendered
-        expect(screen.getByText('This is unchanged text.')).toBeInTheDocument();
-        expect(screen.getByText('govt')).toBeInTheDocument();
-        expect(screen.getByText('government')).toBeInTheDocument();
-        expect(screen.getByText('more text.')).toBeInTheDocument();
+        const originalText = screen.getByText('govt');
+        const replacementText = screen.getByText('government');
+        
+        // Verify styling of original and replacement text
+        expect(originalText).toHaveStyle({
+            textDecoration: 'line-through',
+            color: 'rgba(0, 0, 0, 0.54)'
+        });
+        expect(replacementText).toHaveStyle({
+            color: 'rgb(26, 137, 23)'
+        });
     });
 
     /**
@@ -97,7 +113,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type some text and click analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -123,7 +139,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type some text and click analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -152,7 +168,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type some text and click analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button');
 
         await act(async () => {
@@ -163,6 +179,11 @@ describe('StyleGuideGenerator', () => {
         // Check loading state
         expect(screen.getByText('Analyzing...')).toBeInTheDocument();
         expect(button).toBeDisabled();
+        expect(screen.getByText('Analyzing your text with AP style magic... ✨')).toBeInTheDocument();
+        
+        // Verify textarea is disabled and greyed out during loading
+        expect(textarea).toBeDisabled();
+        expect(textarea).toHaveStyle({ color: 'rgba(0, 0, 0, 0.4)' });
     });
 
     /**
@@ -170,13 +191,15 @@ describe('StyleGuideGenerator', () => {
      * Verifies proper handling of responses with markdown formatting
      */
     it('handles responses with markdown formatting correctly', async () => {
-        const mockResponse = '```json\n["text"]\n```';
-        anthropicService.generateStyleGuide.mockResolvedValueOnce(mockResponse);
+        const mockResponse = [
+            "This is valid JSON text"
+        ];
+        anthropicService.generateStyleGuide.mockResolvedValueOnce('```json\n' + JSON.stringify(mockResponse) + '\n```');
 
         render(<StyleGuideGenerator />);
         
         // Type some text and click analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -186,7 +209,7 @@ describe('StyleGuideGenerator', () => {
 
         // Wait for results
         await waitFor(() => {
-            expect(screen.getByText('text')).toBeInTheDocument();
+            expect(screen.getByText('This is valid JSON text')).toBeInTheDocument();
         });
     });
 
@@ -205,7 +228,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type multi-paragraph text and analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -238,7 +261,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type text and analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const button = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -278,7 +301,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Type text and analyze
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         const analyzeButton = screen.getByRole('button', { name: 'Analyze Text' });
 
         await act(async () => {
@@ -323,7 +346,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Set up initial state
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         fireEvent.change(textarea, { target: { value: 'Test text' } });
         
         const analyzeButton = screen.getByText('Analyze Text');
@@ -374,7 +397,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Set up initial state
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         fireEvent.change(textarea, { target: { value: 'Test text' } });
         
         const analyzeButton = screen.getByText('Analyze Text');
@@ -419,7 +442,7 @@ describe('StyleGuideGenerator', () => {
         render(<StyleGuideGenerator />);
         
         // Set up initial state
-        const textarea = screen.getByPlaceholderText('Paste your text here...');
+        const textarea = screen.getByPlaceholderText('Start writing or paste your text here...');
         fireEvent.change(textarea, { target: { value: 'Test text' } });
         
         const analyzeButton = screen.getByText('Analyze Text');
