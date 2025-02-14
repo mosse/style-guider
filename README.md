@@ -1,4 +1,4 @@
-# Getting Started with Style Guider
+# Getting Started with Style Guider.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
