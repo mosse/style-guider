@@ -355,44 +355,57 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                     margin: '0 auto',
                     position: 'relative'
                 }}>
-                    <textarea
-                        ref={textareaRef}
-                        value={inputText}
-                        onChange={handleInputChange}
-                        placeholder="Start writing or paste your text here..."
-                        disabled={loading}
-                        style={{
-                            width: '100%',
-                            minHeight: '200px',
-                            padding: '20px 0',
-                            border: 'none',
-                            outline: 'none',
-                            fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
-                            fontSize: '21px',
-                            lineHeight: '1.6',
-                            color: loading ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.84)',
-                            resize: 'none',
-                            overflow: 'hidden',
-                            background: 'transparent',
-                            transition: 'color 0.2s ease'
-                        }}
-                    />
+                    {!loading && !styleGuide && (
+                        <textarea
+                            ref={textareaRef}
+                            value={inputText}
+                            onChange={handleInputChange}
+                            placeholder="Start writing or paste your text here..."
+                            style={{
+                                width: '100%',
+                                minHeight: '200px',
+                                padding: '20px 0',
+                                border: 'none',
+                                outline: 'none',
+                                fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
+                                fontSize: '21px',
+                                lineHeight: '1.6',
+                                color: 'rgba(0, 0, 0, 0.84)',
+                                resize: 'none',
+                                overflow: 'hidden',
+                                background: 'transparent',
+                                transition: 'color 0.2s ease'
+                            }}
+                        />
+                    )}
 
                     {loading && (
                         <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'rgba(255, 255, 255, 0.6)',
-                            backdropFilter: 'blur(2px)',
-                            zIndex: 10
+                            width: '100%',
+                            minHeight: '200px',
+                            padding: '20px 0',
+                            fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
+                            fontSize: '21px',
+                            lineHeight: '1.6',
+                            color: 'rgba(0, 0, 0, 0.4)',
+                            position: 'relative'
                         }}>
-                            <LoadingSpinner />
+                            {inputText}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: 'rgba(255, 255, 255, 0.6)',
+                                backdropFilter: 'blur(2px)',
+                                zIndex: 10
+                            }}>
+                                <LoadingSpinner />
+                            </div>
                         </div>
                     )}
 
@@ -406,7 +419,10 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                             lineHeight: '1.6',
                             color: 'rgba(0, 0, 0, 0.84)',
                             textAlign: 'left',
-                            whiteSpace: 'pre-wrap'
+                            whiteSpace: 'pre-wrap',
+                            border: 'none',
+                            outline: 'none',
+                            background: 'transparent'
                         }}>
                             {renderChanges(styleGuide)}
                         </div>
