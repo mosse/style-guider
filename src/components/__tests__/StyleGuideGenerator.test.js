@@ -144,15 +144,13 @@ describe('StyleGuideGenerator', () => {
 
         await act(async () => {
             await userEvent.type(textarea, 'Test text');
-        });
-
-        await act(async () => {
             await userEvent.click(button);
         });
 
-        // Wait for error message
+        // Wait for error message with the specific error we expect from our parser
         await waitFor(() => {
             expect(screen.getByText(/Error:/)).toBeInTheDocument();
+            expect(screen.getByText(/Failed to parse API response/)).toBeInTheDocument();
         });
     });
 

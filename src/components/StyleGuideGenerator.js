@@ -3,6 +3,8 @@ import { anthropicService } from '../services/anthropic/AnthropicService';
 import ApiErrorBoundary from './ApiErrorBoundary';
 import { Tooltip } from 'react-tooltip';
 import LoadingSpinner from './LoadingSpinner';
+import { getStyleGuidePrompt } from '../services/prompts/styleGuidePrompt';
+import { cleanAndParseResponse } from '../utils/responseParser';
 import 'react-tooltip/dist/react-tooltip.css';
 
 function StyleGuideGenerator() {
@@ -38,130 +40,13 @@ function StyleGuideGenerator() {
         setStyleGuide(null);
 
         try {
-            const prompt = `You are tasked with improving a draft document by applying your knowledge of the Associated Press Style Guide (AP Style Guide). Analyze the text and return a JSON array of segments.
-
-Each segment should be either:
-1. A string containing unchanged text (including any linebreaks)
-2. An object representing a change, with the following structure:
-   {
-     "original": "the original text",
-     "replacement": "the suggested improvement",
-     "reason": "brief explanation of why this change improves AP style adherence"
-   }
-
-IMPORTANT: 
-- Make changes at the most granular level possible. Instead of changing entire sentences, identify specific words or phrases that need improvement.
-- Preserve all linebreaks (\\n) in the unchanged text segments. Do not combine paragraphs.
-- Each paragraph should start with its own text segment.
-- Return ONLY the raw JSON array. Do not include any markdown formatting, code block syntax, or explanation text.
-
-Example input with multiple paragraphs:
-"Abraham Lincoln grew up to become the nation's sixteenth president.
-
-He led the country from March 1861 until his assassination in April 1865, a little over a month into his second term."
-
-Your response should be exactly like this (no additional text or formatting):
-[
-    "Abraham Lincoln grew up ",
-    {
-        "original": "to",
-        "replacement": "and",
-        "reason": "AP style prefers more direct language"
-    },
-    " become the nation's ",
-    {
-        "original": "sixteenth",
-        "replacement": "16th",
-        "reason": "AP style uses numerals for ordinal numbers above ninth"
-    },
-    " president.\\n\\n",
-    "He led the country from March 1861 until his assassination in April 1865, a little ",
-    {
-        "original": "over",
-        "replacement": "more than",
-        "reason": "AP style prefers 'more than' over 'over' when referring to time periods"
-    },
-    " a month into his second term."
-]
-
-Guidelines:
-1. Preserve all whitespace, linebreaks, and punctuation in unchanged segments
-2. Make changes that align with AP Style Guide, focusing on:
-   - Numbers (when to use numerals vs. words)
-   - Punctuation rules
-   - Preferred word choices and phrases
-   - Abbreviations and acronyms
-   - Date and time formatting
-3. Each change must be at the most specific word or phrase level possible
-4. Provide clear, concise reasons that reference specific AP style rules
-5. Maintain the original meaning and intent of the text
-6. Keep paragraphs separate - do not combine them into a single segment
-
-Here is the text to analyze:
-${inputText}
-
-Remember: Return ONLY the raw JSON array with no additional formatting or explanation.`;
-
+            const prompt = getStyleGuidePrompt(inputText);
             const response = await anthropicService.generateStyleGuide(prompt);
             
-            // Clean the response by removing any markdown formatting and normalizing whitespace
-            let cleanedResponse = response
-                .replace(/```json\s*/g, '')  // Remove opening markdown
-                .replace(/```\s*$/g, '')     // Remove closing markdown
-                .replace(/[\u2018\u2019]/g, "'")  // Replace smart quotes
-                .replace(/[\u201C\u201D]/g, '"')  // Replace smart double quotes
-                .replace(/\u2014/g, '--')         // Replace em dashes
-                .replace(/\u2013/g, '-')          // Replace en dashes
-                .replace(/\u2026/g, '...')        // Replace ellipsis
-                .replace(/[\u200B-\u200D\uFEFF]/g, '')  // Remove zero-width spaces
-                .trim();
-
-            // Handle newlines in a way that preserves them in strings but removes them from JSON structure
-            cleanedResponse = cleanedResponse
-                .split('\n')
-                .map(line => line.trim())
-                .filter(line => line)  // Remove empty lines
-                .join('');
-
-            // Attempt to fix common JSON syntax issues
-            if (!cleanedResponse.startsWith('[')) {
-                cleanedResponse = '[' + cleanedResponse;
-            }
-            if (!cleanedResponse.endsWith(']')) {
-                cleanedResponse = cleanedResponse + ']';
-            }
-
             try {
-                // Parse the cleaned JSON response
-                const changes = JSON.parse(cleanedResponse);
-                if (!Array.isArray(changes)) {
-                    throw new Error('Response is not an array');
-                }
-                
-                // Validate each segment in the array
-                changes.forEach((segment, index) => {
-                    if (typeof segment !== 'string' && typeof segment !== 'object') {
-                        throw new Error(`Invalid segment type at index ${index}`);
-                    }
-                    if (typeof segment === 'object' && (!segment.original || !segment.replacement || !segment.reason)) {
-                        throw new Error(`Missing required fields in change object at index ${index}`);
-                    }
-                });
-
+                const changes = cleanAndParseResponse(response);
                 setStyleGuide(changes);
             } catch (err) {
-                console.error('JSON Parse Error:', err);
-                console.error('Raw Response:', response);
-                console.error('Cleaned Response:', cleanedResponse);
-                
-                // Try to identify the problematic part of the JSON
-                const position = parseInt(err.message.match(/position (\d+)/)?.[1]);
-                if (!isNaN(position)) {
-                    const context = cleanedResponse.substring(Math.max(0, position - 50), Math.min(cleanedResponse.length, position + 50));
-                    console.error('Error context:', context);
-                    console.error('Error position:', '^'.padStart(51, ' '));
-                }
-                
                 throw new Error(`Failed to parse API response: ${err.message}. Please try again.`);
             }
         } catch (err) {
@@ -361,6 +246,7 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                             value={inputText}
                             onChange={handleInputChange}
                             placeholder="Start writing or paste your text here..."
+                            disabled={loading}
                             style={{
                                 width: '100%',
                                 minHeight: '200px',
@@ -370,7 +256,7 @@ Remember: Return ONLY the raw JSON array with no additional formatting or explan
                                 fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
                                 fontSize: '21px',
                                 lineHeight: '1.6',
-                                color: 'rgba(0, 0, 0, 0.84)',
+                                color: loading ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.84)',
                                 resize: 'none',
                                 overflow: 'hidden',
                                 background: 'transparent',
