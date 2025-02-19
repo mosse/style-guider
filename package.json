@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "7.21.11",
     "cors": "^2.8.5",
     "cra-template": "1.2.0",
     "dotenv": "^16.4.7",
@@ -18,8 +19,7 @@
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
-    "concurrently": "^9.1.2",
-    "@babel/plugin-proposal-private-property-in-object": "^7.22.10"
+    "concurrently": "^9.1.2"
   },
   "scripts": {
     "start": "node server.js",
