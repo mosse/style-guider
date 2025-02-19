@@ -189,38 +189,47 @@ function StyleGuideGenerator() {
     return (
         <ApiErrorBoundary>
             <div className="style-guide-container">
-                <div style={{ 
+                <div style={{
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+                    background: 'white',
                     position: 'sticky',
                     top: 0,
                     zIndex: 100,
-                    backgroundColor: '#fff',
-                    borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-                    padding: '12px 20px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    width: '100%',
                 }}>
                     <div style={{
-                        fontSize: '20px',
-                        fontWeight: '500',
-                        color: 'rgba(0, 0, 0, 0.84)',
-                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+                        maxWidth: '1024px',
+                        margin: '0 auto',
+                        padding: '12px 24px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxSizing: 'border-box',
                     }}>
-                        Style-Guider
+                        <div style={{
+                            fontSize: '20px',
+                            fontWeight: '300',
+                            color: 'rgba(0, 0, 0, 0.84)',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+                            fontVariant: 'small-caps',
+                            letterSpacing: '0.03em'
+                        }}>
+                            Style Guider
+                        </div>
+                        <button
+                            onClick={generateStyleGuide}
+                            disabled={loading || !inputText.trim()}
+                            className="primary"
+                            style={{
+                                fontSize: '15px',
+                                padding: '8px 16px',
+                                minWidth: '120px',
+                                margin: 0
+                            }}
+                        >
+                            {loading ? 'Analyzing...' : 'Analyze Text'}
+                        </button>
                     </div>
-                    <button
-                        onClick={generateStyleGuide}
-                        disabled={loading || !inputText.trim()}
-                        className="primary"
-                        style={{
-                            fontSize: '15px',
-                            padding: '8px 16px',
-                            minWidth: '120px',
-                            margin: 0
-                        }}
-                    >
-                        {loading ? 'Analyzing...' : 'Analyze Text'}
-                    </button>
                 </div>
 
                 <div style={{ 
