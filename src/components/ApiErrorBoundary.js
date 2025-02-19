@@ -1,6 +1,5 @@
 import React from 'react';
 import ErrorBoundary from './ErrorBoundary';
-import { AnthropicError } from '../utils/errors/AnthropicError';
 
 class ApiErrorBoundary extends React.Component {
     handleReset = () => {

@@ -14,7 +14,6 @@ function StyleGuideGenerator() {
     const [error, setError] = useState(null);
     const [acceptedChanges, setAcceptedChanges] = useState(new Set());
     const [rejectedChanges, setRejectedChanges] = useState(new Set());
-    const [visibleTooltips, setVisibleTooltips] = useState(new Set());
     const textareaRef = useRef(null);
 
     // Auto-resize textarea as content changes
@@ -67,11 +66,6 @@ function StyleGuideGenerator() {
             newSet.delete(index);
             return newSet;
         });
-        setVisibleTooltips(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(index);
-            return newSet;
-        });
     };
 
     const handleRejectChange = (index) => {
@@ -81,11 +75,6 @@ function StyleGuideGenerator() {
             return newSet;
         });
         setAcceptedChanges(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(index);
-            return newSet;
-        });
-        setVisibleTooltips(prev => {
             const newSet = new Set(prev);
             newSet.delete(index);
             return newSet;
