@@ -5,8 +5,10 @@ class AnthropicService {
     constructor() {
         this.apiKey = ANTHROPIC_CONFIG.API_KEY;
         this.model = ANTHROPIC_CONFIG.MODEL;
-        // Use local proxy server instead of direct Anthropic API
-        this.apiUrl = 'http://localhost:3001/api/anthropic';
+        // Use relative URL in production, localhost in development
+        this.apiUrl = process.env.NODE_ENV === 'production' 
+            ? '/api/anthropic'
+            : 'http://localhost:3001/api/anthropic';
     }
 
     async generateStyleGuide(prompt) {
