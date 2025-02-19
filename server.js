@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 require('dotenv').config();
 
@@ -14,6 +15,11 @@ const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the React build directory in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'build')));
+}
 
 // Proxy endpoint for Anthropic API
 app.post('/api/anthropic/messages', async (req, res) => {
@@ -58,7 +64,15 @@ app.post('/api/anthropic/messages', async (req, res) => {
     }
 });
 
+// Serve React app for any other routes in production
+if (process.env.NODE_ENV === 'production') {
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    });
+}
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('API Key present:', !!process.env.REACT_APP_ANTHROPIC_API_KEY);
 }); 

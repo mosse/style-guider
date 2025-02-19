@@ -1,70 +1,95 @@
-# Getting Started with Style Guider.
+# Style Guider
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React application that helps improve writing by applying style guide principles using AI.
+
+## Development Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/style-guider.git
+cd style-guider
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory with your Anthropic API key:
+```
+REACT_APP_ANTHROPIC_API_KEY=your_api_key_here
+REACT_APP_ANTHROPIC_MODEL=claude-3-sonnet-20240229
+REACT_APP_ANTHROPIC_API_URL=https://api.anthropic.com/v1
+```
 
 ## Available Scripts
 
-In the project directory, you can run:
+### `npm run dev`
 
-### `npm start`
+Runs the app in development mode with both frontend and backend servers.\
+Frontend: [http://localhost:3000](http://localhost:3000)\
+Backend: [http://localhost:3001](http://localhost:3001)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### `npm run client`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Runs only the frontend in development mode.
 
-### `npm test`
+### `npm run server`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Runs only the backend server.
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Builds the app for production to the `build` folder.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### `npm start`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Runs the production server (must run `npm run build` first).
 
-### `npm run eject`
+### `npm test`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Launches the test runner in interactive watch mode.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Deployment
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Deploying to Vercel
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Install the Vercel CLI:
+```bash
+npm i -g vercel
+```
+
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Deploy the application:
+```bash
+vercel
+```
+
+4. Set up environment variables in Vercel:
+   - Go to your project settings in the Vercel dashboard
+   - Add the following environment variables:
+     - `REACT_APP_ANTHROPIC_API_KEY`
+     - `REACT_APP_ANTHROPIC_MODEL`
+     - `REACT_APP_ANTHROPIC_API_URL`
+
+5. For subsequent deployments:
+```bash
+vercel --prod
+```
+
+### Important Notes
+
+- The application uses a Node.js server to proxy requests to the Anthropic API
+- Both frontend and backend are deployed together
+- Environment variables must be set in your deployment platform
+- The production build serves the React app and API from the same domain
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started)
+- [React documentation](https://reactjs.org/)
+- [Vercel documentation](https://vercel.com/docs)
