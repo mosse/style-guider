@@ -73,7 +73,7 @@ const LoadingSpinner = () => {
                 color: 'rgba(0, 0, 0, 0.6)',
                 fontWeight: 500
             }}>
-                Analyzing your text with AP style magic... ✨
+                Sending your words to a non-deterministic black box... Let's see what happens ✨
             </p>
         </div>
     );
