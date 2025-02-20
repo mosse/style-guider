@@ -16,28 +16,35 @@ export const cleanAndParseResponse = (response) => {
         .replace(/\u2014/g, '--')             // Em dashes
         .replace(/\u2013/g, '-')              // En dashes
         .replace(/\u2026/g, '...')            // Ellipsis
-        .replace(/[\u200B-\u200D\uFEFF]/g, ''); // Zero-width spaces
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Zero-width spaces
+        .replace(/[—]/g, '--');               // Additional em dash variant
 
     // Second pass: handle quotes carefully
     cleanedResponse = cleanedResponse
-        // First normalize all smart quotes to their straight equivalents
-        .replace(/[\u2018\u2019]/g, "'")
-        .replace(/[\u201C\u201D]/g, '"')
-        // Then escape quotes in JSON string values
+        // First normalize all smart quotes to straight quotes, including in the JSON structure
+        .replace(/[""]/g, '"')                // Replace all curly double quotes
+        .replace(/['']/g, "'")                // Replace all curly single quotes
+        // Then handle nested quotes in content
         .replace(/(")((?:\\.|[^"\\])*)(")/g, (match, open, content, close) => {
             // Properly escape quotes in the content while preserving already escaped ones
             const escaped = content
-                .replace(/\\"/g, '"')  // Temporarily unescape any escaped quotes
-                .replace(/"/g, '\\"')  // Escape all quotes
-                .replace(/'/g, "'");   // Normalize any remaining single quotes
+                .replace(/\\"/g, '\\"')        // Preserve already escaped quotes
+                .replace(/(?<!\\)"/g, '\\"')   // Escape unescaped quotes
+                .replace(/'/g, "'");           // Normalize any remaining single quotes
             return `${open}${escaped}${close}`;
         });
 
-    // Handle newlines carefully - preserve empty lines that are part of the content
+    // Handle newlines - preserve them in the JSON strings but remove them between JSON elements
     cleanedResponse = cleanedResponse
-        .split('\n')
-        .map(line => line.trim())
-        .join('');  // Join without filtering to preserve structure
+        .split(/(\{[^}]*\}|\[[^\]]*\]|"(?:\\.|[^"\\])*"|\s+)/g)
+        .map(part => {
+            if (part.trim() === '') {
+                return ' ';
+            }
+            return part;
+        })
+        .join('')
+        .trim();
 
     // Ensure valid array structure
     if (!cleanedResponse.startsWith('[')) {
@@ -49,8 +56,27 @@ export const cleanAndParseResponse = (response) => {
 
     try {
         // Parse and validate the response
-        const parsed = JSON.parse(cleanedResponse);
-        
+        let parsed;
+        try {
+            parsed = JSON.parse(cleanedResponse);
+        } catch (jsonError) {
+            // Get context around the error position
+            const position = parseInt(jsonError.message.match(/position (\d+)/)?.[1]);
+            if (!isNaN(position)) {
+                const start = Math.max(0, position - 50);
+                const end = Math.min(cleanedResponse.length, position + 50);
+                const context = cleanedResponse.substring(start, end);
+                const pointer = ' '.repeat(Math.min(50, position - start)) + '^';
+                
+                console.error('JSON Parse Error Context:');
+                console.error('Snippet:', context);
+                console.error('Position:', pointer);
+                console.error('Original Error:', jsonError.message);
+                console.error('Cleaned Response:', cleanedResponse);
+            }
+            throw jsonError;
+        }
+
         if (!Array.isArray(parsed)) {
             throw new Error('Response is not an array');
         }
@@ -68,17 +94,13 @@ export const cleanAndParseResponse = (response) => {
         return parsed;
     } catch (err) {
         // Add context to the error
-        console.error('JSON Parse Error:', err);
-        console.error('Cleaned Response:', cleanedResponse);
+        console.error('Response Parser Error:', {
+            error: err.message,
+            type: err.name,
+            cleanedResponseLength: cleanedResponse.length,
+            cleanedResponsePreview: cleanedResponse.substring(0, 300) + '...'
+        });
         
-        // Try to identify the problematic part of the JSON
-        const position = parseInt(err.message.match(/position (\d+)/)?.[1]);
-        if (!isNaN(position)) {
-            const context = cleanedResponse.substring(Math.max(0, position - 50), Math.min(cleanedResponse.length, position + 50));
-            console.error('Error context:', context);
-            console.error('Error position:', '^'.padStart(51, ' '));
-        }
-        
-        throw new Error(`Failed to parse API response: ${err.message}`);
+        throw err;
     }
 }; 
