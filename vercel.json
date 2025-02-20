@@ -19,11 +19,11 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/style-guider/api/(.*)",
       "dest": "/server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/style-guider/(.*)",
       "dest": "/build/$1"
     }
   ],

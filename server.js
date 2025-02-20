@@ -29,7 +29,7 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'production') {
     const buildPath = path.join(__dirname, 'build');
     console.log('Serving static files from:', buildPath);
-    app.use(express.static(buildPath));
+    app.use('/style-guider', express.static(buildPath));
 }
 
 // Proxy endpoint for Anthropic API
@@ -80,7 +80,7 @@ app.post('/api/anthropic/messages', async (req, res) => {
 
 // Serve React app for any other routes in production
 if (process.env.NODE_ENV === 'production') {
-    app.get('*', (req, res) => {
+    app.get('/style-guider/*', (req, res) => {
         const indexPath = path.join(__dirname, 'build', 'index.html');
         console.log('Serving index.html from:', indexPath);
         res.sendFile(indexPath);
