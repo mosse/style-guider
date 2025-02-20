@@ -43,9 +43,16 @@ function StyleGuideGenerator() {
             const response = await anthropicService.generateStyleGuide(prompt);
             
             try {
+                console.log('Raw API response:', response);
                 const changes = cleanAndParseResponse(response);
                 setStyleGuide(changes);
             } catch (err) {
+                console.error('Parse error details:', {
+                    error: err.message,
+                    responseLength: response?.length,
+                    responsePreview: response?.substring(0, 300) + '...',
+                    position: err.message.match(/position (\d+)/)?.[1]
+                });
                 throw new Error(`Failed to parse API response: ${err.message}. Please try again.`);
             }
         } catch (err) {
