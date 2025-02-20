@@ -14,12 +14,12 @@ const InstructionsModal = () => {
     }
   }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false);
     if (dontShowAgain) {
       localStorage.setItem('hasSeenInstructions', 'true');
     }
-  };
+  }, [dontShowAgain]);
 
   const handleKeyDown = useCallback((event) => {
     if (event.key === 'Escape') {
