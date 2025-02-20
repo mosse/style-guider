@@ -56,7 +56,7 @@ function StyleGuideGenerator() {
                 throw new Error(`Failed to parse API response: ${err.message}. Please try again.`);
             }
         } catch (err) {
-            setError(err.message || 'An error occurred while generating the style guide');
+            setError(err.message || 'An error occurred while applying the style guide');
         } finally {
             setLoading(false);
         }
@@ -128,6 +128,10 @@ function StyleGuideGenerator() {
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                                         zIndex: 1000
                                     }}
+                                    positionStrategy="fixed"
+                                    offset={5}
+                                    delayShow={100}
+                                    float={true}
                                 />
                             )}
                             {!isAccepted && (
