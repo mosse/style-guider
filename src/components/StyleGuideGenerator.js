@@ -166,9 +166,11 @@ function StyleGuideGenerator() {
                             )}
                             {showTooltip && (
                                 <span style={{ 
-                                    display: 'inline-block',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
                                     marginLeft: '4px',
-                                    verticalAlign: 'middle'
+                                    position: 'relative',
+                                    top: '-4px'
                                 }}>
                                     <button
                                         onClick={() => handleAcceptChange(index)}
@@ -178,7 +180,9 @@ function StyleGuideGenerator() {
                                             minWidth: 'unset',
                                             fontSize: '12px',
                                             lineHeight: '1',
-                                            verticalAlign: 'middle'
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
                                         className="primary"
                                         title="Accept change"
@@ -193,7 +197,9 @@ function StyleGuideGenerator() {
                                             minWidth: 'unset',
                                             fontSize: '12px',
                                             lineHeight: '1',
-                                            verticalAlign: 'middle'
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
                                         title="Reject change"
                                         aria-label="Reject change"
