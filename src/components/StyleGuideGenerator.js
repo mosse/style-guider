@@ -88,6 +88,18 @@ function StyleGuideGenerator() {
         });
     };
 
+    const resetState = () => {
+        setInputText('');
+        setStyleGuide(null);
+        setError(null);
+        setAcceptedChanges(new Set());
+        setRejectedChanges(new Set());
+        // Reset textarea height
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+        }
+    };
+
     const renderChanges = (changes) => {
         if (!Array.isArray(changes)) return null;
 
@@ -228,17 +240,23 @@ function StyleGuideGenerator() {
                             Style Guider
                         </div>
                         <button
-                            onClick={generateStyleGuide}
-                            disabled={loading || !inputText.trim()}
-                            className="primary"
+                            onClick={styleGuide || error ? resetState : generateStyleGuide}
+                            disabled={loading || (!styleGuide && !error && !inputText.trim())}
+                            className={styleGuide || error ? '' : 'primary'}
                             style={{
                                 fontSize: '15px',
                                 padding: '8px 16px',
                                 minWidth: '120px',
-                                margin: 0
+                                margin: 0,
+                                ...(styleGuide || error ? {
+                                    backgroundColor: 'white',
+                                    color: 'rgb(26, 137, 23)',
+                                    border: '1px solid rgb(26, 137, 23)',
+                                    cursor: 'pointer'
+                                } : {})
                             }}
                         >
-                            {loading ? 'Analyzing...' : 'Analyze Text'}
+                            {loading ? 'Analyzing...' : (styleGuide || error ? 'Reset' : 'Analyze Text')}
                         </button>
                     </div>
                 </div>
