@@ -65,8 +65,15 @@ const InstructionsModal = () => {
       >
         <h2 id="modal-title">Welcome to Style Guider</h2>
         <div className="modal-body">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-          <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          <p>Welcome! Style Guider is a proof of concept project built by <a href="https://markm.ac" target="_blank" rel="noopener noreferrer">Mark Macdonald</a> that explores the integration of Large Language Models (LLMs) with text editing workflows.</p>
+          
+          <p>Submit your text, and the app will suggest edits to align your writing with <a href="https://cdn.static-economist.com/sites/default/files/store/Style_Guide_2015.pdf" target="_blank" rel="noopener noreferrer">The Economist's Style Guide</a>. Each suggestion can be reviewed and applied individually.</p>
+
+          <p>Please note that this is an early prototype with some known limitations. The app occasionally encounters issues when processing responses from the Anthropic API, and the style suggestions are currently based on the LLM's pre-existing knowledge of The Economist style guide.</p>
+
+          <p>Looking ahead, planned improvements include support for custom style guide uploads, enhanced prompting for more accurate and helpful edit suggestions, and improved reliability and error handling.</p>
+
+          <p>Have feedback or suggestions? Please email <a href="mailto:hello@markm.ac">hello@markm.ac</a></p>
         </div>
         <div className="modal-footer">
           <label className="dont-show-again">
