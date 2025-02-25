@@ -38,12 +38,27 @@ class ErrorBoundary extends React.Component {
         
         // Call the onReset prop if provided
         if (this.props.onReset) {
-            this.props.onReset();
+            this.props.onReset(this.state.error);
         }
     }
 
     render() {
         if (this.state.hasError) {
+            // Check for custom fallback renderer
+            if (this.props.fallbackRender) {
+                const customFallback = this.props.fallbackRender({
+                    error: this.state.error,
+                    errorInfo: this.state.errorInfo,
+                    resetErrorBoundary: this.handleReset
+                });
+                
+                // If a custom fallback is returned, use it
+                if (customFallback) {
+                    return customFallback;
+                }
+            }
+            
+            // If no custom fallback or if it returned null, use default rendering
             const isAnthropicError = this.state.error instanceof AnthropicError;
             const containerClassName = `error-container ${isAnthropicError ? 'api-error' : ''}`;
 

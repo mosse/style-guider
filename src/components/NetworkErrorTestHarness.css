@@ -1,0 +1,146 @@
+.network-test-container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.network-test-container h1 {
+  color: #2c3e50;
+  font-size: 32px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.network-test-container h2 {
+  color: #2c3e50;
+  font-size: 24px;
+  margin: 20px 0 16px;
+  font-weight: 500;
+}
+
+.description {
+  color: #546e7a;
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.network-test-section {
+  margin-bottom: 40px;
+}
+
+.network-test-section p {
+  color: #546e7a;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.demo-container {
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 40px;
+  min-height: 200px;
+}
+
+.error-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.trigger-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+.trigger-button:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.trigger-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.trigger-help {
+  color: #757575;
+  font-size: 14px;
+  max-width: 400px;
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 6px;
+  padding: 20px;
+  text-align: center;
+}
+
+.success-message h3 {
+  color: #2e7d32;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.success-message p {
+  color: #388e3c;
+  margin: 0;
+}
+
+.implementation-notes {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 40px;
+}
+
+.implementation-notes h2 {
+  color: #2c3e50;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.implementation-notes p {
+  color: #546e7a;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.implementation-notes ul {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.implementation-notes li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #546e7a;
+}
+
+@media (max-width: 768px) {
+  .network-test-container {
+    padding: 16px;
+  }
+  
+  .demo-container {
+    padding: 20px;
+  }
+} 
