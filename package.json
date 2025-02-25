@@ -29,6 +29,7 @@
     "server": "node server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:parser": "node test-parser.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

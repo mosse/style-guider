@@ -50,6 +50,32 @@ Runs the production server (must run `npm run build` first).
 
 Launches the test runner in interactive watch mode.
 
+### `npm run test:parser`
+
+Runs the JSON parser test suite to verify the parser's functionality with various inputs, including malformed responses.
+
+## JSON Parser
+
+The application includes a robust JSON parser that processes API responses from LLM services. The parser:
+
+- Validates and cleans input by removing markdown formatting and normalizing special characters
+- Repairs common syntax errors such as missing brackets, unquoted property names, and more
+- Recovers valid fragments from malformed responses when possible
+- Provides detailed error information for debugging
+- Offers comprehensive telemetry for tracking parser performance
+
+The parser consists of several components:
+
+- `responseParser.js`: Core parsing logic with multi-stage validation and repair
+- `parserValidator.js`: Structure validation functions for JSON response format
+- `parserRecovery.js`: Recovery utilities for extracting valid data from malformed responses
+- `errors/ParserError.js`: Custom error class with detailed error context
+
+To test the parser with a custom input, run:
+```bash
+node test-parser.js "[{\"original\": \"Test\", \"replacement\": \"Better test\", \"reason\": \"More descriptive\"}]"
+```
+
 ## Deployment
 
 ### Deploying to Vercel

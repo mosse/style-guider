@@ -1,4 +1,4 @@
-export const getStyleGuidePrompt = (inputText) => `You are tasked with improving a draft document by applying the principles contained in a specific Style Guide. Follow these steps carefully:
+export const getStyleGuidePrompt = (inputText) => `You are tasked with improving a draft document by applying the principles contained in The Economist Style Guide. Follow these steps carefully:
 
 1. First, review your knowledge of The Economist Style Guide.
 

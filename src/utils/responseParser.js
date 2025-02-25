@@ -1,106 +1,246 @@
 /**
- * Cleans and parses the API response, handling various quote and special character scenarios.
- * @param {string} response - The raw response from the API
- * @returns {Array} The parsed array of text segments and change objects
- * @throws {Error} If the response cannot be parsed into valid JSON
+ * Response Parser Module
+ * 
+ * This module is responsible for cleaning, validating, and parsing API responses
+ * from LLM services. It handles various edge cases and provides robust error 
+ * handling and recovery mechanisms.
  */
-export const cleanAndParseResponse = (response) => {
-    // Clean the response by removing any markdown formatting
-    let cleanedResponse = response
-        .replace(/```json\s*/g, '')  // Remove opening markdown
-        .replace(/```\s*$/g, '')     // Remove closing markdown
-        .trim();
 
-    // First pass: normalize special characters (except quotes)
-    cleanedResponse = cleanedResponse
-        .replace(/\u2014/g, '--')             // Em dashes
-        .replace(/\u2013/g, '-')              // En dashes
-        .replace(/\u2026/g, '...')            // Ellipsis
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Zero-width spaces
-        .replace(/[—]/g, '--');               // Additional em dash variant
+const { validateResponse } = require('./parserValidator');
+const { ParserError } = require('./errors/ParserError');
+const { createFallbackFromFragments, evaluateRecoveryPotential } = require('./parserRecovery');
 
-    // Second pass: handle quotes carefully
-    cleanedResponse = cleanedResponse
-        // First normalize all smart quotes to straight quotes, including in the JSON structure
-        .replace(/[""]/g, '"')                // Replace all curly double quotes
-        .replace(/['']/g, "'")                // Replace all curly single quotes
-        // Then handle nested quotes in content
-        .replace(/(")((?:\\.|[^"\\])*)(")/g, (match, open, content, close) => {
-            // Properly escape quotes in the content while preserving already escaped ones
-            const escaped = content
-                .replace(/\\"/g, '\\"')        // Preserve already escaped quotes
-                .replace(/(?<!\\)"/g, '\\"')   // Escape unescaped quotes
-                .replace(/'/g, "'");           // Normalize any remaining single quotes
-            return `${open}${escaped}${close}`;
-        });
+// Telemetry data for tracking parser performance
+const parserTelemetry = {
+  totalAttempts: 0,
+  successCount: 0,
+  fallbackSuccessCount: 0,
+  failureCount: 0
+};
 
-    // Handle newlines - preserve them in the JSON strings but remove them between JSON elements
-    cleanedResponse = cleanedResponse
-        .split(/(\{[^}]*\}|\[[^\]]*\]|"(?:\\.|[^"\\])*"|\s+)/g)
-        .map(part => {
-            if (part.trim() === '') {
-                return ' ';
-            }
-            return part;
-        })
-        .join('')
-        .trim();
+/**
+ * Cleans the raw API response text by removing markdown formatting,
+ * normalizing special characters, and ensuring valid structure.
+ * 
+ * @param {string} response - The raw response text from the API
+ * @returns {string} The cleaned response text
+ */
+function cleanResponse(response) {
+  if (!response) return '';
 
-    // Ensure valid array structure
-    if (!cleanedResponse.startsWith('[')) {
-        cleanedResponse = '[' + cleanedResponse;
-    }
-    if (!cleanedResponse.endsWith(']')) {
-        cleanedResponse = cleanedResponse + ']';
-    }
+  let cleaned = response;
 
+  // Remove markdown code block formatting if present
+  cleaned = cleaned.replace(/^```json\s+|\s+```$/g, '');
+  cleaned = cleaned.replace(/^```\s+|\s+```$/g, '');
+
+  // Normalize special characters
+  cleaned = cleaned.replace(/["]/g, '"'); // Smart quotes
+  cleaned = cleaned.replace(/["]/g, '"');
+  cleaned = cleaned.replace(/[']/g, "'"); // Smart apostrophes
+  cleaned = cleaned.replace(/[']/g, "'");
+  cleaned = cleaned.replace(/—/g, '--'); // Em dash
+  cleaned = cleaned.replace(/–/g, '-');  // En dash
+
+  // Remove control characters that cause JSON parsing to fail
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+
+  // Handle the response based on its structure
+  const trimmed = cleaned.trim();
+  
+  // Case 1: Raw text (not JSON)
+  if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
+    // This is likely raw text - escape all quotes and wrap in JSON array
+    const escapedText = trimmed.replace(/"/g, '\\"');
+    return `["${escapedText}"]`;
+  }
+  
+  // Case 2: Looks like it might be valid JSON - try to parse it directly
+  try {
+    JSON.parse(trimmed);
+    return trimmed; // It's valid JSON, return as is
+  } catch (e) {
+    // Not valid JSON, continue with repairs
+  }
+  
+  // Case 3: JSON-like but needs repair
+  // Ensure array wrapper
+  let processed = trimmed;
+  if (!processed.startsWith('[')) {
+    processed = '[' + processed;
+  }
+  if (!processed.endsWith(']')) {
+    processed = processed + ']';
+  }
+  
+  // Fix missing commas
+  processed = processed.replace(/}(\s*){/g, '},\n$1{');
+  processed = processed.replace(/"(\s*){/g, '",\n$1{');
+  processed = processed.replace(/}(\s*)"/g, '},\n$1"');
+  
+  // Fix unquoted property names
+  processed = processed.replace(/([{,]\s*)(original)(\s*:)/g, '$1"$2"$3');
+  processed = processed.replace(/([{,]\s*)(replacement)(\s*:)/g, '$1"$2"$3');
+  processed = processed.replace(/([{,]\s*)(reason)(\s*:)/g, '$1"$2"$3');
+  
+  // Fix trailing commas
+  processed = processed.replace(/,(\s*)\]/g, '\n]');
+  
+  // Fix nested quotes - this is the most complex part
+  // We'll use a simpler approach that handles the most common cases
+  
+  // Look for string literals and ensure internal quotes are escaped
+  const stringRegex = /"((?:\\.|[^"\\])*)"/g;
+  processed = processed.replace(stringRegex, (match, content) => {
+    // Escape any unescaped quotes in the content
+    const escapedContent = content.replace(/([^\\])"/g, '$1\\"');
+    return `"${escapedContent}"`;
+  });
+  
+  return processed;
+}
+
+/**
+ * Validates and attempts to repair the cleaned response if needed.
+ * 
+ * @param {string} cleanedResponse - The cleaned response string
+ * @returns {Object} An object with validation status and repaired response
+ */
+function validateAndRepair(cleanedResponse) {
+  // Validate the cleaned response
+  const validationResult = validateResponse(cleanedResponse);
+  
+  if (validationResult.isValid) {
+    return {
+      isValid: true,
+      response: cleanedResponse
+    };
+  }
+  
+  // If not valid, check recovery potential
+  const recoveryPotential = evaluateRecoveryPotential(cleanedResponse);
+  
+  if (recoveryPotential.recoverabilityScore >= 50) {
+    // High chance of recovery - try fallback parsing
     try {
-        // Parse and validate the response
-        let parsed;
-        try {
-            parsed = JSON.parse(cleanedResponse);
-        } catch (jsonError) {
-            // Get context around the error position
-            const position = parseInt(jsonError.message.match(/position (\d+)/)?.[1]);
-            if (!isNaN(position)) {
-                const start = Math.max(0, position - 50);
-                const end = Math.min(cleanedResponse.length, position + 50);
-                const context = cleanedResponse.substring(start, end);
-                const pointer = ' '.repeat(Math.min(50, position - start)) + '^';
-                
-                console.error('JSON Parse Error Context:');
-                console.error('Snippet:', context);
-                console.error('Position:', pointer);
-                console.error('Original Error:', jsonError.message);
-                console.error('Cleaned Response:', cleanedResponse);
-            }
-            throw jsonError;
-        }
-
-        if (!Array.isArray(parsed)) {
-            throw new Error('Response is not an array');
-        }
-
-        // Validate each segment
-        parsed.forEach((segment, index) => {
-            if (typeof segment !== 'string' && typeof segment !== 'object') {
-                throw new Error(`Invalid segment type at index ${index}`);
-            }
-            if (typeof segment === 'object' && (!segment.original || !segment.replacement || !segment.reason)) {
-                throw new Error(`Missing required fields in change object at index ${index}`);
-            }
-        });
-
-        return parsed;
-    } catch (err) {
-        // Add context to the error
-        console.error('Response Parser Error:', {
-            error: err.message,
-            type: err.name,
-            cleanedResponseLength: cleanedResponse.length,
-            cleanedResponsePreview: cleanedResponse.substring(0, 300) + '...'
-        });
-        
-        throw err;
+      const fallbackArray = createFallbackFromFragments(cleanedResponse);
+      
+      if (Array.isArray(fallbackArray) && fallbackArray.length > 0) {
+        // Successfully recovered something
+        return {
+          isValid: true,
+          response: JSON.stringify(fallbackArray),
+          usedFallback: true,
+          recoveryApproach: recoveryPotential.recommendedApproach
+        };
+      }
+    } catch (error) {
+      // Recovery failed, continue to error
     }
+  }
+  
+  // Return the validation failure
+  return {
+    isValid: false,
+    validationResult,
+    recoveryPotential
+  };
+}
+
+/**
+ * Cleans and parses the API response, implementing multi-stage parsing
+ * with error handling and recovery.
+ * 
+ * @param {string} response - The raw response text from the API
+ * @returns {Array} An array of parsed text segments and change objects
+ * @throws {ParserError} If the response cannot be parsed
+ */
+function cleanAndParseResponse(response) {
+  parserTelemetry.totalAttempts++;
+  
+  try {
+    if (!response || typeof response !== 'string' || response.trim() === '') {
+      throw new ParserError('Empty or invalid response', {
+        errorType: 'empty_response',
+        suggestion: 'Check API connection and prompt configuration'
+      });
+    }
+
+    // Step 1: Clean the response
+    const cleanedResponse = cleanResponse(response);
+    
+    // Step 2: Validate and attempt repair if needed
+    const validationResult = validateAndRepair(cleanedResponse);
+    
+    if (!validationResult.isValid) {
+      // Create a detailed error from the validation result
+      throw ParserError.fromValidationResult(
+        validationResult.validationResult, 
+        response
+      );
+    }
+    
+    // Step 3: Parse the validated/repaired response
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(validationResult.response);
+      
+      // Record success
+      if (validationResult.usedFallback) {
+        parserTelemetry.fallbackSuccessCount++;
+      } else {
+        parserTelemetry.successCount++;
+      }
+      
+      return parsedResponse;
+    } catch (jsonError) {
+      // If JSON.parse fails despite validation, something unexpected happened
+      throw ParserError.fromJsonError(jsonError, response);
+    }
+  } catch (error) {
+    // Handle parsing failures and record telemetry
+    parserTelemetry.failureCount++;
+    
+    // Rethrow ParserErrors as-is, wrap other errors
+    if (error instanceof ParserError) {
+      // Log the error details for debugging
+      error.logDetails();
+      throw error;
+    } else {
+      // Wrap generic errors in ParserError
+      const parserError = new ParserError(`Unexpected parser error: ${error.message}`, {
+        errorType: 'unexpected_error',
+        errorDetail: error.message,
+        rawResponse: response,
+        suggestion: 'This may be a bug in the parser implementation'
+      });
+      parserError.logDetails();
+      throw parserError;
+    }
+  }
+}
+
+/**
+ * Gets the current parser telemetry data.
+ * 
+ * @returns {Object} Parser telemetry statistics
+ */
+function getParserTelemetry() {
+  const successRate = parserTelemetry.totalAttempts > 0 
+    ? ((parserTelemetry.successCount + parserTelemetry.fallbackSuccessCount) / parserTelemetry.totalAttempts) * 100 
+    : 0;
+  
+  return {
+    ...parserTelemetry,
+    successRate: successRate.toFixed(2) + '%',
+    primarySuccessRate: (parserTelemetry.successCount / parserTelemetry.totalAttempts * 100).toFixed(2) + '%',
+    fallbackSuccessRate: (parserTelemetry.fallbackSuccessCount / parserTelemetry.totalAttempts * 100).toFixed(2) + '%',
+  };
+}
+
+module.exports = {
+  cleanAndParseResponse,
+  cleanResponse,
+  validateAndRepair,
+  getParserTelemetry
 }; 
