@@ -23,21 +23,19 @@ function App() {
     <RootErrorBoundary>
       <Router>
         <div className="App">
-          <nav className="app-nav">
-            <div className="nav-container">
-              <Link to="/" className="nav-logo">Style Guider</Link>
-              <div className="nav-links">
-                <Link to="/" className="nav-link">Home</Link>
-                {/* Only show test harness links in development mode */}
-                {isDevelopment && (
-                  <>
-                    <Link to="/error-tests" className="nav-link">Error Tests</Link>
-                    <Link to="/network-tests" className="nav-link">Network Tests</Link>
-                  </>
-                )}
+          {/* Only show navigation bar in development mode */}
+          {isDevelopment && (
+            <nav className="app-nav">
+              <div className="nav-container">
+                <Link to="/" className="nav-logo">Style Guider</Link>
+                <div className="nav-links">
+                  <Link to="/" className="nav-link">Home</Link>
+                  <Link to="/error-tests" className="nav-link">Error Tests</Link>
+                  <Link to="/network-tests" className="nav-link">Network Tests</Link>
+                </div>
               </div>
-            </div>
-          </nav>
+            </nav>
+          )}
 
           <main>
             <React.Suspense fallback={
