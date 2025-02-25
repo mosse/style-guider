@@ -323,21 +323,21 @@ function StyleGuideGenerator() {
                                 lineHeight: '1.6',
                                 color: 'rgba(0, 0, 0, 0.4)',
                                 position: 'relative',
-                                textAlign: 'left'
+                                textAlign: 'left',
+                                whiteSpace: 'pre-wrap'
                             }}>
                                 {inputText}
                                 <div style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
+                                    position: 'fixed',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
                                     background: 'rgba(255, 255, 255, 0.6)',
                                     backdropFilter: 'blur(2px)',
-                                    zIndex: 10
+                                    zIndex: 10,
+                                    borderRadius: '12px',
+                                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)'
                                 }}>
                                     <LoadingSpinner />
                                 </div>
