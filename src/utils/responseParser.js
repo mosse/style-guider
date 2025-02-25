@@ -43,10 +43,92 @@ function cleanResponse(response) {
   cleaned = cleaned.replace(/–/g, '-');  // En dash
 
   // Remove control characters that cause JSON parsing to fail
-  cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+  cleaned = cleaned.replace(/[^\x20-\x7E\s]/g, ''); // Replace all non-printable ASCII and non-whitespace
 
   // Handle the response based on its structure
   const trimmed = cleaned.trim();
+  
+  // Special case handling for JSON format where string is used as a key
+  // Detect if this is a response with text fragments as object keys
+  if (trimmed.match(/^\[\{"\n?[^"]+":/) || trimmed.match(/^\[\{"[^"]+\\n/)) {
+    try {
+      // Attempt to normalize the format
+      let normalizedResponse = [];
+      
+      // First try parsing directly (in case it's valid JSON as-is)
+      try {
+        const parsed = JSON.parse(trimmed);
+        
+        // Check if we need to transform object key structure
+        // where the original text is the key and replacement is the value
+        if (parsed.length > 0 && Object.keys(parsed[0]).some(key => key.includes('\n') || key.startsWith('\n'))) {
+          parsed.forEach(item => {
+            // Extract the first key-value pair which should be original-replacement
+            const keys = Object.keys(item);
+            if (keys.length > 0) {
+              const original = keys[0];
+              const replacement = item[original];
+              let reason = '';
+              
+              // Check if there's a reason property
+              if (item.reason) {
+                reason = item.reason;
+              } else if (typeof replacement === 'object' && replacement.reason) {
+                reason = replacement.reason;
+              }
+              
+              // Create a properly formatted change object
+              normalizedResponse.push({
+                original: original,
+                replacement: typeof replacement === 'string' ? replacement : JSON.stringify(replacement),
+                reason: reason
+              });
+            }
+          });
+          
+          return JSON.stringify(normalizedResponse);
+        }
+        
+        return trimmed; // It's valid JSON as-is
+      } catch (e) {
+        // Continue with other normalization attempts
+      }
+      
+      // Try a manual approach for malformed JSON with this pattern
+      const segments = trimmed.match(/\{"\n?[^"}]+":[^}]+\}/g) || [];
+      
+      if (segments.length > 0) {
+        segments.forEach(segment => {
+          try {
+            // Extract the key (original text) and value (replacement)
+            const keyMatch = segment.match(/^\{"([^"]+)":/);
+            const valueMatch = segment.match(/:"([^"]+)"/);
+            const reasonMatch = segment.match(/"reason":"([^"]+)"/);
+            
+            if (keyMatch && keyMatch[1]) {
+              const original = keyMatch[1];
+              const replacement = valueMatch && valueMatch[1] ? valueMatch[1] : '';
+              const reason = reasonMatch && reasonMatch[1] ? reasonMatch[1] : '';
+              
+              normalizedResponse.push({
+                original,
+                replacement,
+                reason
+              });
+            }
+          } catch (segmentError) {
+            // Skip malformed segments
+          }
+        });
+        
+        if (normalizedResponse.length > 0) {
+          return JSON.stringify(normalizedResponse);
+        }
+      }
+    } catch (e) {
+      // If special handling fails, continue with standard approach
+    }
+  }
   
   // Case 1: Raw text (not JSON)
   if (!trimmed.startsWith('[') && !trimmed.startsWith('{')) {
@@ -64,8 +146,9 @@ function cleanResponse(response) {
   }
   
   // Case 3: JSON-like but needs repair
-  // Ensure array wrapper
   let processed = trimmed;
+
+  // Ensure array wrapper
   if (!processed.startsWith('[')) {
     processed = '[' + processed;
   }
@@ -78,7 +161,7 @@ function cleanResponse(response) {
   processed = processed.replace(/"(\s*){/g, '",\n$1{');
   processed = processed.replace(/}(\s*)"/g, '},\n$1"');
   
-  // Fix unquoted property names
+  // Fix unquoted property names - specifically target known fields
   processed = processed.replace(/([{,]\s*)(original)(\s*:)/g, '$1"$2"$3');
   processed = processed.replace(/([{,]\s*)(replacement)(\s*:)/g, '$1"$2"$3');
   processed = processed.replace(/([{,]\s*)(reason)(\s*:)/g, '$1"$2"$3');
@@ -86,16 +169,92 @@ function cleanResponse(response) {
   // Fix trailing commas
   processed = processed.replace(/,(\s*)\]/g, '\n]');
   
-  // Fix nested quotes - this is the most complex part
-  // We'll use a simpler approach that handles the most common cases
+  // Enhanced handling of nested quotes and change objects
+  // Approach: More careful scan for balanced structures
   
-  // Look for string literals and ensure internal quotes are escaped
-  const stringRegex = /"((?:\\.|[^"\\])*)"/g;
-  processed = processed.replace(stringRegex, (match, content) => {
-    // Escape any unescaped quotes in the content
-    const escapedContent = content.replace(/([^\\])"/g, '$1\\"');
-    return `"${escapedContent}"`;
-  });
+  // First, ensure we don't have single-character text fragments
+  // (which can happen due to processing errors with complex text)
+  processed = processed.replace(/",\s*"([,:;.!?])",/g, '"$1",');
+
+  // Helper function to check if a string is balanced regarding JSON structure
+  const isBalanced = (str) => {
+    const stack = [];
+    let inString = false;
+    let escape = false;
+    
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        escape = true;
+        continue;
+      }
+      
+      if (char === '"' && !inString) {
+        inString = true;
+      } else if (char === '"' && inString) {
+        inString = false;
+      } else if (!inString) {
+        if (char === '{' || char === '[') {
+          stack.push(char);
+        } else if (char === '}') {
+          if (stack.pop() !== '{') return false;
+        } else if (char === ']') {
+          if (stack.pop() !== '[') return false;
+        }
+      }
+    }
+    
+    return stack.length === 0 && !inString;
+  };
+  
+  // If the processed response is still not balanced, try a more aggressive approach
+  if (!isBalanced(processed)) {
+    // Extract potential change objects (they have a specific structure)
+    const changeObjectPattern = /{[^{}]*"original"[^{}]*"replacement"[^{}]*"reason"[^{}]*}/g;
+    const textPattern = /"[^"]+"/g;
+    
+    let potentialObjects = processed.match(changeObjectPattern) || [];
+    let textSegments = processed.match(textPattern) || [];
+    
+    // Filter out segments that are part of objects
+    textSegments = textSegments.filter(text => {
+      return !potentialObjects.some(obj => obj.includes(text));
+    });
+    
+    // Reconstruct the array with proper formatting
+    if (potentialObjects.length > 0 || textSegments.length > 0) {
+      // Alternate between objects and text (simplified approach)
+      const allSegments = [...potentialObjects, ...textSegments].sort((a, b) => {
+        return processed.indexOf(a) - processed.indexOf(b);
+      });
+      
+      processed = '[' + allSegments.join(',\n') + ']';
+    }
+  }
+  
+  // Final safety check: try to parse, revert to simpler approach if needed
+  try {
+    JSON.parse(processed);
+  } catch (e) {
+    // If all else fails, extract just the change objects and use them
+    try {
+      const objectPattern = /{[^{}]*"original"[^{}]*"replacement"[^{}]*"reason"[^{}]*}/g;
+      const changeObjects = trimmed.match(objectPattern) || [];
+      
+      if (changeObjects.length > 0) {
+        return '[' + changeObjects.join(',\n') + ']';
+      }
+    } catch (e2) {
+      // Last resort: just wrapping in an array if all else fails
+      return `["${trimmed.replace(/"/g, '\\"')}"]`;
+    }
+  }
   
   return processed;
 }

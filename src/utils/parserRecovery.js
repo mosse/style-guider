@@ -227,8 +227,8 @@ function evaluateRecoveryPotential(response) {
   const hasClosingBracket = response.trim().endsWith(']');
   const hasChangeObjects = response.includes('"original"') || 
                           response.includes('original:') ||
-                          (response.includes('"replacement"') || response.includes('replacement:')) && 
-                          (response.includes('"reason"') || response.includes('reason:'));
+                          ((response.includes('"replacement"') || response.includes('replacement:')) && 
+                          (response.includes('"reason"') || response.includes('reason:')));
   
   // Increment score based on positive indicators
   if (hasOpeningBracket) prognosis.recoverabilityScore += 20;
