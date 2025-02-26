@@ -121,6 +121,10 @@ function StyleGuideGenerator() {
             <>
                 {changes.map((segment, index) => {
                     if (typeof segment === 'string') {
+                        // Handle newline characters properly
+                        if (segment === "\n") {
+                            return <br key={index} />;
+                        }
                         return <span key={index}>{segment}</span>;
                     }
                     
