@@ -69,7 +69,7 @@ const InstructionsModal = () => {
           
           <p>Submit your text, and the app will suggest edits to align your writing with <a href="https://cdn.static-economist.com/sites/default/files/store/Style_Guide_2015.pdf" target="_blank" rel="noopener noreferrer">The Economist's Style Guide</a>. Each suggestion can be reviewed and applied individually.</p>
 
-          <p>Please note that this is an early prototype with some known limitations. The app occasionally encounters issues when processing responses from the Anthropic API (parsing malformed JSON is... a whole thing), and the style suggestions are currently based on the LLM's pre-existing knowledge of The Economist style guide.</p>
+          <p>Please note that this is an early prototype with some known limitations. The app occasionally encounters issues when processing responses from the Anthropic API (parsing malformed JSON from the AI robo-lords is... a whole thing), and the style suggestions are currently based on the LLM's pre-existing knowledge of The Economist style guide.</p>
 
           <p>Looking ahead, planned improvements include support for custom style guide uploads, enhanced prompting for more accurate and helpful edit suggestions, and improved reliability and error handling.</p>
 
