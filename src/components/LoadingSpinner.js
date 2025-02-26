@@ -1,6 +1,9 @@
 import React from 'react';
 
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ message }) => {
+    // Default message will be used if no custom message is provided
+    const defaultMessage = "Sending your words to a non-deterministic black box... Let's see what happens ✨";
+    
     return (
         <div style={{
             display: 'flex',
@@ -10,7 +13,9 @@ const LoadingSpinner = () => {
             padding: '20px',
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            width: '280px',
+            maxWidth: '90vw'
         }}>
             <div style={{
                 width: '40px',
@@ -57,23 +62,18 @@ const LoadingSpinner = () => {
                             0% { transform: rotate(360deg); }
                             100% { transform: rotate(0deg); }
                         }
-                        .loading-text {
-                            animation: pulse 1.5s ease-in-out infinite;
-                        }
-                        @keyframes pulse {
-                            0%, 100% { opacity: 0.6; }
-                            50% { opacity: 0.9; }
-                        }
                     `}
                 </style>
             </div>
-            <p className="loading-text" style={{
+            <p style={{
                 margin: 0,
                 fontSize: '14px',
-                color: 'rgba(0, 0, 0, 0.6)',
-                fontWeight: 500
+                color: 'rgba(0, 0, 0, 0.75)',
+                fontWeight: 500,
+                textAlign: 'center',
+                wordWrap: 'break-word'
             }}>
-                Sending your words to a non-deterministic black box... Let's see what happens ✨
+                {message || defaultMessage}
             </p>
         </div>
     );
