@@ -32,7 +32,8 @@ export class AnthropicError extends Error {
             404: 'Resource not found',
             429: 'Rate limit exceeded. Please try again later',
             500: 'Anthropic API internal server error',
-            503: 'Anthropic API service unavailable'
+            503: 'Anthropic API service unavailable',
+            504: 'Gateway timeout: The server took too long to respond. This may happen for complex requests.'
         };
 
         return errorMessages[code] || defaultMessage || 'An unexpected error occurred';

@@ -49,29 +49,41 @@ app.post('/api/anthropic/messages', async (req, res) => {
 
         console.log('Sending request to Anthropic:', JSON.stringify(anthropicBody, null, 2));
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': process.env.REACT_APP_ANTHROPIC_API_KEY,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify(anthropicBody),
-        });
+        // AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 55000); // 55 second timeout (just under Vercel's 60s limit)
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Anthropic API error details:', errorData);
-            throw new Error(errorData.error?.message || `Anthropic API error: ${response.statusText}`);
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': process.env.REACT_APP_ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify(anthropicBody),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId); // Clear the timeout if the request completes
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Anthropic API error details:', errorData);
+                throw new Error(errorData.error?.message || `Anthropic API error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            res.json(data);
+        } catch (error) {
+            clearTimeout(timeoutId); // Clear the timeout in case of error
+            throw error;
         }
-
-        const data = await response.json();
-        res.json(data);
     } catch (error) {
         console.error('Error proxying to Anthropic:', error);
-        const statusCode = error.response?.status || 500;
+        const statusCode = error.name === 'AbortError' ? 504 : (error.response?.status || 500);
         res.status(statusCode).json({ 
-            error: error.message,
+            error: error.name === 'AbortError' ? 'Gateway timeout: request took too long' : error.message,
             details: error.response?.data,
             timestamp: new Date().toISOString()
         });
