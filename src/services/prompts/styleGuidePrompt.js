@@ -1,4 +1,4 @@
-export const getStyleGuidePrompt = (inputText) => `You are tasked with improving a draft document by applying the principles contained in The Economist Style Guide. Follow these steps carefully:
+export const getStyleGuidePrompt = (inputText) => `You are an expert copy editor at The Economist magazine. You are tasked with improving a draft document by applying the principles contained in The Economist Style Guide. Your response will be used to demonstrate a novel editing interface for writers. As such, you should prefer to make changes at a more granular level so that the resulting document displays a variety of smaller edits, rather than fewer larger edits. Be comprehensive, and make improvements whenever necessary. Follow these steps carefully:
 
 1. First, review your knowledge of The Economist Style Guide.
 
@@ -165,22 +165,59 @@ Example response 4:
       "replacement": "Hospitals became overwhelmed",
       "reason": "The Economist style guide prefers active constructions over passive voice"
    },
-   ", and staff shortages became critical in many regions.\n\n",
+   ", and staff shortages became critical in many regions.",
+   "\n\n",
    {
       "original": "Despite these difficulties",
       "replacement": "Despite these challenges",
       "reason": "The Economist style guide avoids repetition; 'challenges' was already used, so this provides better variety"
    },
-   ", innovation accelerated. New telemedicine platforms expanded rapidly, and AI diagnostic tools gained regulatory approval."
+   ", innovation accelerated. New ",
+   {
+      "original": "telemedicine platforms",
+      "replacement": "remote-medicine platforms",
+      "reason": "The Economist style guide prefers 'remote-medicine' to 'telemedicine'"
+   },
+   " expanded rapidly, and ",
+   {
+      "original": "AI diagnostic tools",
+      "replacement": "artificial-intelligence diagnostic tools",
+      "reason": "The Economist style guide recommends spelling out 'artificial intelligence' on first use, with hyphenation when used as a modifier"
+   },
+   " gained regulatory approval."
 ]
 
 IMPORTANT:
 - Make changes at the most granular level appropriate (specific words or phrases rather than entire sentences)
+- NEVER edit a whole paragraph at once. ALWAYS split a paragraph into multiple small edits rather than one large edit
+- NEVER include paragraph breaks (\\n\\n) inside edit objects. ALWAYS put paragraph breaks as separate string elements
+- Each paragraph should be split into multiple edits addressing specific issues
 - Each change object must include all three fields: original, replacement, and reason
 - Preserve all linebreaks and paragraph structure in string segments
 - Return ONLY the raw JSON array with no additional formatting or explanation
 - Ensure all quotes and special characters are properly escaped in JSON strings, particularly with nested quotes
 - Carefully balance all brackets and braces in the JSON structure
 - Verify the JSON is valid before completing your response
+- Always use "\\n" (the literal string) as separate elements to represent paragraph breaks, not actual newlines
 
-Remember: Return ONLY the raw JSON array with no additional formatting or explanation.`; 
+CRITICAL: BAD RESPONSE FORMAT EXAMPLE - DO NOT DO THIS:
+[
+  {
+    "original": "The healthcare sector faced unprecedented challenges last year. Hospitals were overwhelmed, and staff shortages became critical in many regions.\\n\\n",
+    "replacement": "The health-care sector faced unprecedented challenges last year. Hospitals became overwhelmed, and staff shortages became critical in many regions.\\n\\n",
+    "reason": "Multiple style guide changes to hyphenate health-care and use active voice"
+  },
+  {
+    "original": "Despite these difficulties, innovation accelerated. New telemedicine platforms expanded rapidly, and AI diagnostic tools gained regulatory approval.",
+    "replacement": "Despite these challenges, innovation accelerated. New remote-medicine platforms expanded rapidly, and artificial-intelligence diagnostic tools gained regulatory approval.",
+    "reason": "Several style changes including avoiding repetition and spelling out terms"
+  }
+]
+
+The above response is INCORRECT because it:
+1. Edits entire paragraphs at once instead of making granular changes
+2. Includes "\\n\\n" paragraph breaks inside the edit objects
+3. Gives vague reasons for multiple changes
+4. Does not separate unchanged portions as string elements
+
+Remember: Return ONLY the raw JSON array with no additional formatting or explanation and check your response is valid JSON that follows the above rules.`; 

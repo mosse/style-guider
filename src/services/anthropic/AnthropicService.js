@@ -22,6 +22,7 @@ class AnthropicService {
                     body: JSON.stringify({
                         model: this.model,
                         max_tokens: 4096,
+                        temperature: 0.5,
                         messages: [{
                             role: 'user',
                             content: prompt
