@@ -7,25 +7,10 @@ import LoadingSpinner from './LoadingSpinner';
 import ErrorDisplay from './ErrorDisplay';
 import { getStyleGuidePrompt } from '../services/prompts/styleGuidePrompt';
 import { cleanAndParseResponse, getParserTelemetry } from '../utils/responseParser';
+import { loadingPhrases } from '../utils/loadingPhrases';
 import 'react-tooltip/dist/react-tooltip.css';
 
 function StyleGuideGenerator() {
-    // Loading phrases array - the first one will be empty to use LoadingSpinner's default
-    const loadingPhrases = [
-        null, // null for first 5 seconds to use the default message
-        "Teaching Claude proper grammar... this might take a while.",
-        "Politely asking Claude to review your text... it's thinking very deeply.",
-        "Waking up Claude from its philosophical daydream...",
-        "Claude is pondering your prose with the intensity of a literature professor.",
-        "Anthropic's neurons are firing... some faster than others.",
-        "Claude is consulting its style guide about your style guide...",
-        "Carefully crafting feedback... one overthought sentence at a time.",
-        "Anthropic is feeling particularly anthropic today. Please stand by.",
-        "Summoning Claude from the depths of the AI realm... it's a bit shy.",
-        "Claude is currently debating Oxford commas with itself. Your text is next.",
-        "Converting caffeine into critique... Claude works better after its morning coffee."
-    ];
-
     const [inputText, setInputText] = useState('');
     const [styleGuide, setStyleGuide] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -36,19 +21,23 @@ function StyleGuideGenerator() {
     const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
     const textareaRef = useRef(null);
 
-    // Effect to rotate loading phrases
+    // Get random index from the loadingPhrases array, excluding the first null item
+    const getRandomPhraseIndex = () => {
+        // Start from index 1 to skip the null
+        return Math.floor(Math.random() * (loadingPhrases.length - 1)) + 1;
+    };
+
+    // Effect to rotate loading phrases randomly
     useEffect(() => {
         let intervalId;
         
         if (loading) {
-            // Reset to first phrase (null) when loading starts
+            // Start with index 0 (null) for default message
             setLoadingPhraseIndex(0);
             
-            // Set up interval to change phrases every 5 seconds
+            // Set up interval to change phrases randomly every 5 seconds
             intervalId = setInterval(() => {
-                setLoadingPhraseIndex(prevIndex => 
-                    (prevIndex + 1) % loadingPhrases.length
-                );
+                setLoadingPhraseIndex(getRandomPhraseIndex());
             }, 5000);
         } else {
             // Reset phrase index when loading stops
