@@ -19,6 +19,7 @@ function StyleGuideGenerator() {
     const [rejectedChanges, setRejectedChanges] = useState(new Set());
     const [parserStats, setParserStats] = useState(null);
     const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
     const textareaRef = useRef(null);
 
     // Example text constant
@@ -58,6 +59,21 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
             if (intervalId) clearInterval(intervalId);
         };
     }, [loading]);
+
+    // Effect to detect touch device
+    useEffect(() => {
+        const checkTouchDevice = () => {
+            const hasTouch = 'ontouchstart' in window || 
+                            navigator.maxTouchPoints > 0 || 
+                            navigator.msMaxTouchPoints > 0;
+            setIsTouchDevice(hasTouch);
+        };
+        
+        checkTouchDevice();
+        window.addEventListener('resize', checkTouchDevice);
+        
+        return () => window.removeEventListener('resize', checkTouchDevice);
+    }, []);
 
     // Auto-resize textarea as content changes
     const adjustTextareaHeight = () => {
@@ -205,9 +221,11 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                         zIndex: 1000
                                     }}
                                     positionStrategy="fixed"
-                                    offset={15}
-                                    delayShow={100}
-                                    float={true}
+                                    offset={isTouchDevice ? 10 : 20}
+                                    delayShow={isTouchDevice ? 0 : 100}
+                                    float={!isTouchDevice}
+                                    openOnClick={isTouchDevice}
+                                    closeEvents={isTouchDevice ? "click" : null}
                                 />
                             )}
                             {!isAccepted && (
