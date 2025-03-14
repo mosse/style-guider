@@ -60,15 +60,17 @@ ${inputText}
    - If still struggling, simplify the response by making fewer, more significant changes
    - As a last resort, provide simple string segments with minimal changes
 
+NOTE: THe following examples are intended to help you format responses. Do not rely on them for stylistic guidance, rather lean on your knowledge of the style guide instead.
+
 Example input 1:
-"Four years ago today, on February 13, 2021, Senate Republicans acquitted former president Donald Trump of incitement of insurrection in his second impeachment trial. Although 57 senators, including 7 Republicans, voted to convict Trump for launching the January 6, 2021 attack on the U.S. Capitol, that vote did not reach the threshold of 67 votes—two thirds of the Senate—necessary to convict a president in an impeachment trial."
+"Four years ago today, on February 13, 2021, Senate Republicans acquitted former president Donald Trump of incitement of insurrection in his second impeachment trial. Although 57 senators, including 7 Republicans, voted to convict Trump for launching the January 6, 2021 attack on the U.S. Capitol, that vote did not reach the threshold of 67 votes — two thirds of the Senate — necessary to convict a president in an impeachment trial."
 
 Example response 1:
 [
-   "Four years ago today, on February 13, 2021, ",
+   "Four years ago today, on February 13, 2021, Senate Republicans acquitted ",
    {
-      "original": "Senate Republicans acquitted former president Donald Trump",
-      "replacement": "Senate Republicans acquitted Donald Trump",
+      "original": "former president Donald Trump",
+      "replacement": "Donald Trump",
       "reason": "The Economist style guide advises against using 'former president' as a title - use the person's name directly"
    },
    " of ",
@@ -77,55 +79,57 @@ Example response 1:
       "replacement": "inciting insurrection",
       "reason": "The Economist favors active, direct language over nominal constructions"
    },
-   " in his second impeachment trial. ",
+   " in his second impeachment trial. Although 57 senators, including ",
    {
-      "original": "Although 57 senators, including 7 Republicans,",
-      "replacement": "Although 57 senators, including seven Republicans,",
+      "original": "7 Republicans,",
+      "replacement": "seven Republicans,",
       "reason": "The Economist style guide recommends spelling out single-digit numbers"
    },
-   " voted to convict Trump for ",
+   " voted to convict Trump for launching the ",
    {
-      "original": "launching the January 6, 2021 attack",
-      "replacement": "launching the January 6th 2021 attack",
+      "original": "January 6, 2021",
+      "replacement": "January 6th 2021",
       "reason": "The Economist style guide uses 'th' for dates and removes comma between date and year"
    },
-   " on the ",
+   " attack on the ",
    {
       "original": "U.S.",
       "replacement": "American",
       "reason": "The Economist prefers 'American' to 'U.S.' in most contexts"
    },
-   " Capitol, that vote did not reach the threshold of 67 votes—",
+   " Capitol, that vote did not reach the threshold of 67 votes — ",
    {
       "original": "two thirds",
       "replacement": "two-thirds",
       "reason": "The Economist hyphenates compound modifiers"
    },
-   " of the Senate—necessary to convict a president in an impeachment trial."
+   " of the Senate — necessary to convict a president in an impeachment trial."
 ]
 
 Example input 2:
-"The company announced that it will be implementing new AI technology to improve customer service. They claimed that the new system will reduce wait times by 50%. The spokesperson for the company said 'We are excited about this innovative solution that will transform our customer's experience.'"
+"While the implementation of the new policy, which was developed after extensive consultation with stakeholders and underwent multiple rounds of revision, has been met with some resistance from certain quarters, the majority of employees have expressed support for the changes."
 
 Example response 2:
 [
+   "While the implementation of the new policy, ",
    {
-      "original": "The company announced that it will be implementing",
-      "replacement": "The company announced that it will implement",
-      "reason": "The Economist style guide favors concise language; 'will implement' is more direct than 'will be implementing'"
+      "original": "which was developed after extensive consultation with stakeholders and underwent multiple rounds of revision",
+      "replacement": "developed after consulting stakeholders",
+      "reason": "The Economist style guide favors concise, clear sentences over complex subordinate clauses"
    },
-   " new AI technology to improve customer service. ",
+   ", has ",
    {
-      "original": "They claimed",
-      "replacement": "It claimed",
-      "reason": "The Economist style guide recommends maintaining consistent pronouns; use 'it' for company as a singular entity"
+      "original": "been met with some resistance from certain quarters",
+      "replacement": "faced some opposition",
+      "reason": "Replace passive voice and vague phrases with active, specific language"
    },
-   " that the new system will reduce wait times by 50%. The spokesperson for the company said ",
+   ", ",
    {
-      "original": "'We are excited about this innovative solution that will transform our customer's experience.'",
-      "replacement": "'We are excited about this innovation that will transform our customers' experience.'",
-      "reason": "The Economist style guide avoids redundant words like 'solution' and prefers the plural possessive 'customers'' in this context"
-   }
+      "original": "the majority of employees have expressed support for the changes",
+      "replacement": "most employees support it",
+      "reason": "Simplify wordy expressions and use direct language"
+   },
+   "."
 ]
 
 Example input 3 (with special characters and quotes):
@@ -133,58 +137,19 @@ Example input 3 (with special characters and quotes):
 
 Example response 3:
 [
+   "The CEO stated, \\"Our ",
    {
-      "original": "The CEO stated, \\"Our Q1 results were 'unprecedented' in the company's 20-year history.\\"",
-      "replacement": "The CEO stated, \\"Our first-quarter results were 'unprecedented' in the company's 20-year history.\\"",
+      "original": "Q1 results",
+      "replacement": "first-quarter results",
       "reason": "The Economist style guide prefers writing out 'first quarter' instead of using 'Q1' abbreviation"
    },
-   " However, revenue actually decreased by 5% compared to ",
+   " were 'unprecedented' in the company's 20-year history.\\" However, revenue actually decreased by 5% compared to ",
    {
-      "original": "Q1 of the previous year",
-      "replacement": "the first quarter of the previous year",
+      "original": "Q1",
+      "replacement": "the first quarter",
       "reason": "Consistency with Economist style of writing out 'first quarter' instead of abbreviation"
    },
-   ". The CFO explained that \\"special circumstances—including supply chain disruptions—affected our bottom line.\\""
-]
-
-Example input 4 (multi-paragraph text):
-"The healthcare sector faced unprecedented challenges last year. Hospitals were overwhelmed, and staff shortages became critical in many regions.
-
-Despite these difficulties, innovation accelerated. New telemedicine platforms expanded rapidly, and AI diagnostic tools gained regulatory approval."
-
-Example response 4:
-[
-   {
-      "original": "The healthcare sector",
-      "replacement": "The health-care sector",
-      "reason": "The Economist style guide hyphenates 'health-care' when used as a compound modifier"
-   },
-   " faced unprecedented challenges last year. ",
-   {
-      "original": "Hospitals were overwhelmed",
-      "replacement": "Hospitals became overwhelmed",
-      "reason": "The Economist style guide prefers active constructions over passive voice"
-   },
-   ", and staff shortages became critical in many regions.",
-   "\n\n",
-   {
-      "original": "Despite these difficulties",
-      "replacement": "Despite these challenges",
-      "reason": "The Economist style guide avoids repetition; 'challenges' was already used, so this provides better variety"
-   },
-   ", innovation accelerated. New ",
-   {
-      "original": "telemedicine platforms",
-      "replacement": "remote-medicine platforms",
-      "reason": "The Economist style guide prefers 'remote-medicine' to 'telemedicine'"
-   },
-   " expanded rapidly, and ",
-   {
-      "original": "AI diagnostic tools",
-      "replacement": "artificial-intelligence diagnostic tools",
-      "reason": "The Economist style guide recommends spelling out 'artificial intelligence' on first use, with hyphenation when used as a modifier"
-   },
-   " gained regulatory approval."
+   " of the previous year. The CFO explained that \\"special circumstances—including supply chain disruptions—affected our bottom line.\\""
 ]
 
 IMPORTANT:
@@ -194,6 +159,7 @@ IMPORTANT:
 - Each paragraph should be split into multiple edits addressing specific issues
 - Each change object must include all three fields: original, replacement, and reason
 - Preserve all linebreaks and paragraph structure in string segments
+- NEVER confuse the above examples with the input text
 - Return ONLY the raw JSON array with no additional formatting or explanation
 - Ensure all quotes and special characters are properly escaped in JSON strings, particularly with nested quotes
 - Carefully balance all brackets and braces in the JSON structure
