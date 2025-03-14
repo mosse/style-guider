@@ -62,18 +62,17 @@ const InstructionsModal = () => {
         className="modal-content"
         ref={modalRef}
         role="document"
+        data-visible={isVisible}
       >
         <h2 id="modal-title">Welcome to Style Guider</h2>
         <div className="modal-body">
-          <p>Welcome! Style Guider is a proof of concept project built by <a href="https://markm.ac" target="_blank" rel="noopener noreferrer">Mark Macdonald</a> that explores the integration of Large Language Models (LLMs) with text editing workflows.</p>
+          <p>Style Guider is a proof of concept project that uses AI to copyedit writing based on <a href="https://cdn.static-economist.com/sites/default/files/store/Style_Guide_2015.pdf" target="_blank" rel="noopener noreferrer">The Economist's Style Guide</a>. Built by <a href="https://markm.ac" target="_blank" rel="noopener noreferrer">Mark Macdonald</a>, it explores how AI can enhance editing workflows.</p>
           
-          <p>Submit your text, and the app will suggest edits to align your writing with <a href="https://cdn.static-economist.com/sites/default/files/store/Style_Guide_2015.pdf" target="_blank" rel="noopener noreferrer">The Economist's Style Guide</a>. Each suggestion can be reviewed and applied individually.</p>
+          <p>Paste your text and receive style suggestions that you can review and apply individually. Tap or hover over each suggestion to see an explanation of the recommended changes.</p>
 
-          <p>Please note that this is an early prototype with some known limitations. The app occasionally encounters issues when processing responses from the Anthropic API (parsing malformed JSON from the AI robo-lords is... a whole thing), and the style suggestions are currently based on the LLM's pre-existing knowledge of The Economist style guide.</p>
+          <p>As an early prototype, you may encounter occasional weirdness. The app uses Claude's understanding of The Economist's style guide and is perfectly capable of pumping out slop. LLMs... amiright?</p>
 
-          <p>Looking ahead, planned improvements include support for custom style guide uploads, enhanced prompting for more accurate and helpful edit suggestions, and improved reliability and error handling.</p>
-
-          <p>Have feedback or suggestions? Please email <a href="mailto:hello@markm.ac">hello@markm.ac</a></p>
+          <p>Future improvements may include custom style guide support and enhanced suggestion accuracy. Questions or feedback? <a href="mailto:hello@markm.ac">Get in touch</a>. I'd love to hear from you.</p>
         </div>
         <div className="modal-footer">
           <label className="dont-show-again">
