@@ -312,14 +312,14 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                         <div style={{
                             maxWidth: '1024px',
                             margin: '0 auto',
-                            padding: '12px 24px',
+                            padding: isTouchDevice ? '8px 16px' : '12px 24px',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             boxSizing: 'border-box',
                         }}>
                             <div style={{
-                                fontSize: '20px',
+                                fontSize: isTouchDevice ? '18px' : '20px',
                                 fontWeight: '300',
                                 color: 'rgba(0, 0, 0, 0.84)',
                                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
@@ -333,9 +333,9 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                 disabled={loading || (!styleGuide && !error && !inputText.trim())}
                                 className={styleGuide || error ? '' : 'primary'}
                                 style={{
-                                    fontSize: '15px',
-                                    padding: '8px 16px',
-                                    minWidth: '120px',
+                                    fontSize: isTouchDevice ? '14px' : '15px',
+                                    padding: isTouchDevice ? '10px 20px' : '8px 16px',
+                                    minWidth: isTouchDevice ? '100px' : '120px',
                                     margin: 0,
                                     ...(styleGuide || error ? {
                                         backgroundColor: 'white',
@@ -351,7 +351,7 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                     </div>
 
                     <div style={{ 
-                        padding: '40px 20px', 
+                        padding: isTouchDevice ? '20px 16px' : '40px 20px', 
                         maxWidth: '728px', 
                         margin: '0 auto',
                         position: 'relative'
@@ -375,7 +375,7 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                         border: 'none',
                                         outline: 'none',
                                         fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
-                                        fontSize: '21px',
+                                        fontSize: isTouchDevice ? '18px' : '21px',
                                         lineHeight: '1.6',
                                         color: loading ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.84)',
                                         resize: 'none',
@@ -389,8 +389,8 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                         onClick={handleExampleText}
                                         style={{
                                             marginTop: '8px',
-                                            padding: '8px 16px',
-                                            fontSize: '15px',
+                                            padding: isTouchDevice ? '10px 20px' : '8px 16px',
+                                            fontSize: isTouchDevice ? '14px' : '15px',
                                             backgroundColor: 'white',
                                             color: 'rgb(26, 137, 23)',
                                             border: '1px solid rgb(26, 137, 23)',
@@ -413,7 +413,7 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                 minHeight: '200px',
                                 padding: '20px 0',
                                 fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
-                                fontSize: '21px',
+                                fontSize: isTouchDevice ? '18px' : '21px',
                                 lineHeight: '1.6',
                                 color: 'rgba(0, 0, 0, 0.4)',
                                 position: 'relative',
@@ -421,20 +421,22 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                 whiteSpace: 'pre-wrap'
                             }}>
                                 {inputText}
-                                <div style={{
-                                    position: 'fixed',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    display: 'flex',
-                                    background: 'rgba(255, 255, 255, 0.6)',
-                                    backdropFilter: 'blur(2px)',
-                                    zIndex: 10,
-                                    borderRadius: '12px',
-                                    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)'
-                                }}>
-                                    <LoadingSpinner message={loadingPhrases[loadingPhraseIndex]} />
-                                </div>
+                                <LoadingSpinner 
+                                    message={loadingPhrases[loadingPhraseIndex]} 
+                                    style={{
+                                        position: 'fixed',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        zIndex: 10,
+                                        background: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(4px)',
+                                        WebkitBackdropFilter: 'blur(4px)',
+                                        borderRadius: isTouchDevice ? '8px' : '12px',
+                                        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
+                                        border: '1px solid rgba(0, 0, 0, 0.05)'
+                                    }}
+                                />
                             </div>
                         )}
 
@@ -444,7 +446,7 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                 minHeight: '200px',
                                 padding: '20px 0',
                                 fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
-                                fontSize: '21px',
+                                fontSize: isTouchDevice ? '18px' : '21px',
                                 lineHeight: '1.6',
                                 color: 'rgba(0, 0, 0, 0.84)',
                                 textAlign: 'left',

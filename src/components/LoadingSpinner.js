@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LoadingSpinner = ({ message }) => {
+const LoadingSpinner = ({ message, style }) => {
     // Default message will be used if no custom message is provided
     const defaultMessage = "Sending your words to a non-deterministic black box... Let's see what happens ✨";
     
@@ -15,7 +15,8 @@ const LoadingSpinner = ({ message }) => {
             borderRadius: '12px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             width: '280px',
-            maxWidth: '90vw'
+            maxWidth: '90vw',
+            ...style
         }}>
             <div style={{
                 width: '40px',
