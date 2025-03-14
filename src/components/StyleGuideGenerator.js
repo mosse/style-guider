@@ -21,6 +21,15 @@ function StyleGuideGenerator() {
     const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
     const textareaRef = useRef(null);
 
+    // Example text constant
+    const EXAMPLE_TEXT = `A report from the Labor Department yesterday showed that inflation has dropped again, falling back to 2.4%, the same rate as it was just before the coronavirus pandemic. Today the Dow Jones Industrial Average jumped 400 points to a record high, while the S&P 500 closed above 5,800 for the first time. 
+
+Washington Post economics columnist Heather Long noted that "[b]y just about every measure, the U.S. economy is in good shape." Inflation is back down, growth remains strong at 3%, unemployment is low at 4.1% with the U.S. having created almost 7 million more jobs than it had before the pandemic. The stock market is hitting all-time highs. Long adds that "many Americans are getting sizable pay raises, and middle-class wealth has surged to record levels." The Federal Reserve has begun to cut interest rates, and foreign leaders are talking about the U.S. economy with envy. 
+
+Democratic presidential nominee and sitting vice president Kamala Harris has promised to continue the economic policies of the Biden-Harris administration and focus on cutting costs for families. She has called for a federal law against price gouging on groceries during times of crisis, cutting taxes for families, and enabling Medicare to pay for home health aides. She has proposed $25,000 in down payment assistance for first-time homebuyers and promised to work with the private sector to build 3 million new housing units by the end of her first term. 
+
+The Committee for a Responsible Federal Budget, which focuses on the direct effect of policies on the federal debt, estimated that Harris's plans would add $3.5 trillion to the debt.`;
+
     // Get random index from the loadingPhrases array, excluding the first null item
     const getRandomPhraseIndex = () => {
         // Start from index 1 to skip the null
@@ -63,6 +72,12 @@ function StyleGuideGenerator() {
     const handleInputChange = (e) => {
         setInputText(e.target.value);
         adjustTextareaHeight();
+    };
+
+    const handleExampleText = () => {
+        setInputText(EXAMPLE_TEXT);
+        // Wait for state update then adjust height
+        setTimeout(adjustTextareaHeight, 0);
     };
 
     const generateStyleGuide = async () => {
@@ -324,28 +339,54 @@ function StyleGuideGenerator() {
                         position: 'relative'
                     }}>
                         {!loading && !styleGuide && (
-                            <textarea
-                                ref={textareaRef}
-                                value={inputText}
-                                onChange={handleInputChange}
-                                placeholder="Start writing or paste your text here..."
-                                disabled={loading}
-                                style={{
-                                    width: '100%',
-                                    minHeight: '200px',
-                                    padding: '20px 0',
-                                    border: 'none',
-                                    outline: 'none',
-                                    fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
-                                    fontSize: '21px',
-                                    lineHeight: '1.6',
-                                    color: loading ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.84)',
-                                    resize: 'none',
-                                    overflow: 'hidden',
-                                    background: 'transparent',
-                                    transition: 'color 0.2s ease'
-                                }}
-                            />
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                alignItems: 'center'
+                            }}>
+                                <textarea
+                                    ref={textareaRef}
+                                    value={inputText}
+                                    onChange={handleInputChange}
+                                    placeholder="Start writing or paste your text here..."
+                                    disabled={loading}
+                                    style={{
+                                        width: '100%',
+                                        minHeight: '200px',
+                                        padding: '20px 0',
+                                        border: 'none',
+                                        outline: 'none',
+                                        fontFamily: 'medium-content-serif-font, Georgia, Cambria, "Times New Roman", Times, serif',
+                                        fontSize: '21px',
+                                        lineHeight: '1.6',
+                                        color: loading ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.84)',
+                                        resize: 'none',
+                                        overflow: 'hidden',
+                                        background: 'transparent',
+                                        transition: 'color 0.2s ease'
+                                    }}
+                                />
+                                {!inputText.trim() && (
+                                    <button
+                                        onClick={handleExampleText}
+                                        style={{
+                                            marginTop: '8px',
+                                            padding: '8px 16px',
+                                            fontSize: '15px',
+                                            backgroundColor: 'white',
+                                            color: 'rgb(26, 137, 23)',
+                                            border: '1px solid rgb(26, 137, 23)',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        <span>Try an example</span>
+                                    </button>
+                                )}
+                            </div>
                         )}
 
                         {loading && (
