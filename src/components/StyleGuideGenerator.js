@@ -205,7 +205,7 @@ The Committee for a Responsible Federal Budget, which focuses on the direct effe
                                         zIndex: 1000
                                     }}
                                     positionStrategy="fixed"
-                                    offset={5}
+                                    offset={15}
                                     delayShow={100}
                                     float={true}
                                 />
