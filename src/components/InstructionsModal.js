@@ -70,7 +70,7 @@ const InstructionsModal = () => {
           
           <p>Paste your text and receive style suggestions that you can review and apply individually. Tap or hover over each suggestion to see an explanation of the recommended changes.</p>
 
-          <p>As an early prototype, you may encounter occasional weirdness. The app uses Claude's understanding of The Economist's style guide and is perfectly capable of pumping out slop. LLMs... amiright?</p>
+          <p>As an early prototype, you may encounter occasional weirdness. The app uses Claude's understanding of The Economist's style guide and is perfectly capable of pumping out slop. LLMs... need I say more?</p>
 
           <p>Future improvements may include custom style guide support and enhanced suggestion accuracy. Questions or feedback? <a href="mailto:hello@markm.ac">Get in touch</a>. I'd love to hear from you.</p>
         </div>
