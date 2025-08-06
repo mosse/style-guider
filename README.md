@@ -18,7 +18,7 @@ npm install
 3. Create a `.env` file in the root directory with your Anthropic API key:
 ```
 REACT_APP_ANTHROPIC_API_KEY=your_api_key_here
-REACT_APP_ANTHROPIC_MODEL=claude-3-sonnet-20240229
+REACT_APP_ANTHROPIC_MODEL=claude-opus-4-1-20250805
 REACT_APP_ANTHROPIC_API_URL=https://api.anthropic.com/v1
 ```
 
