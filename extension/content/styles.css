@@ -1,0 +1,9 @@
+/* Minimal host-page styles for the content script containers.
+   All real styling lives inside Shadow DOM to avoid conflicts. */
+
+#style-guider-button-host,
+#style-guider-annotations {
+  all: initial;
+  position: fixed;
+  z-index: 2147483647;
+}
