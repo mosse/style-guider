@@ -9,7 +9,7 @@ console.log('Server starting with configuration:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
 console.log('PWD:', process.cwd());
-console.log('ANTHROPIC_API_KEY:', process.env.REACT_APP_ANTHROPIC_API_KEY ? 'Present (starts with: ' + process.env.REACT_APP_ANTHROPIC_API_KEY.substring(0, 15) + '...)' : 'Missing');
+console.log('ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY ? 'Present (starts with: ' + process.env.ANTHROPIC_API_KEY.substring(0, 15) + '...)' : 'Missing');
 console.log('ANTHROPIC_API_URL:', process.env.REACT_APP_ANTHROPIC_API_URL || 'Missing');
 console.log('ANTHROPIC_MODEL:', process.env.REACT_APP_ANTHROPIC_MODEL || 'Missing');
 
@@ -35,7 +35,7 @@ if (process.env.NODE_ENV === 'production') {
 // Proxy endpoint for Anthropic API
 app.post('/api/anthropic/messages', async (req, res) => {
     try {
-        if (!process.env.REACT_APP_ANTHROPIC_API_KEY) {
+        if (!process.env.ANTHROPIC_API_KEY) {
             throw new Error('Anthropic API key is not configured');
         }
 
@@ -58,7 +58,7 @@ app.post('/api/anthropic/messages', async (req, res) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': process.env.REACT_APP_ANTHROPIC_API_KEY,
+                    'x-api-key': process.env.ANTHROPIC_API_KEY,
                     'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify(anthropicBody),
@@ -103,5 +103,5 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('API Key present:', !!process.env.REACT_APP_ANTHROPIC_API_KEY);
+    console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
 }); 

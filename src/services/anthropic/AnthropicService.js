@@ -3,7 +3,6 @@ import { handleApiError, withRetry } from '../../utils/errors/errorHandler';
 
 class AnthropicService {
     constructor() {
-        this.apiKey = ANTHROPIC_CONFIG.API_KEY;
         this.model = ANTHROPIC_CONFIG.MODEL;
         // Use relative URL in production, localhost in development
         this.apiUrl = process.env.NODE_ENV === 'production' 
